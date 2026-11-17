@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Симулятор турникета ZKTeco</title>
+    <style>
+        :root {
+            --zk-green: #00a859;
+            --zk-blue: #0072ce;
+            --metal-light: #e2e8f0;
+            --metal-mid: #94a3b8;
+            --metal-dark: #475569;
+            --bg-dark: #0f172a;
+            --panel-bg: #1e293b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        header h1 {
+            font-size: 1.6rem;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .zk-badge {
+            background: var(--zk-green);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 800;
+            font-size: 1.1rem;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        /* Основная рабочая зона */
+        .workspace {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+            align-items: flex-start;
+            max-width: 1100px;
+            width: 100%;
+        }
+
+        /* Сцена с турникетом */
+        .turnstile-stage {
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 30px;
+            flex: 1 1 520px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Индикатор состояния сверху */
+        .status-banner {
+            background: #0f172a;
+            border: 1px solid #334155;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ef4444;
+            box-shadow: 0 0 8px #ef4444;
+        }
+
+        /* Визуализация турникета (вид сверху/спереди в изометрии) */
+        .turnstile-scene {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Проход (пол) */
+        .walkway {
+            position: absolute;
+            width: 340px;
+            height: 220px;
+            background: repeating-linear-gradient(
+                90deg,
+                #1e293b,
+                #1e293b 20px,
+                #263349 20px,
+                #263349 40px
+            );
+            border-top: 3px dashed #475569;
+            border-bottom: 3px dashed #475569;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            color: #64748b;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+
+        /* Тумба турникета ZKTeco */
+        .cabinet {
+            position: relative;
+            width: 240px;
+            height: 95px;
+            background: linear-gradient(180deg, #f1f5f9 0%, #cbd5e1 40%, #94a3b8 100%);
+            border-radius: 14px;
+            border: 2px solid #64748b;
+            box-shadow: 0 15px 25px rgba(0,0,0,0.6), inset 0 2px 3px rgba(255,255,255,0.8);
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 14px;
+        }
+
+        /* Черная верхняя вставка */
+        .cabinet-top-trim {
+            position: absolute;
+            top: 8px;
+            left: 45px;
+            right: 45px;
+            height: 79px;
+            background: #1e293b;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #334155;
+        }
+
+        .zk-logo-plate {
+            color: #fff;
+            font-weight: 800;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+        .zk-logo-plate span {
+            color: var(--zk-green);
+        }
+
+        /* Считыватель RFID */
+        .rfid-reader {
+            margin-top: 6px;
+            width: 54px;
+            height: 36px;
+            background: #0f172a;
+            border: 1px solid var(--zk-blue);
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.2s;
+        }
+
+        .rfid-reader:hover {
+            box-shadow: 0 0 12px rgba(0, 114, 206, 0.7);
+            transform: scale(1.05);
+        }
+
+        .rfid-waves {
+            font-size: 0.75rem;
+            color: #38bdf8;
+        }
+        .rfid-label {
+            font-size: 0.55rem;
+            color: #94a3b8;
+        }
+
+        /* Светодиодные индикаторы направления (торцы тумбы) */
+        .led-panel {
+            width: 24px;
+            height: 54px;
+            background: #090d16;
+            border-radius: 4px;
+            border: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            font-weight: bold;
+            box-shadow: inset 0 0 6px #000;
+        }
+
+        .led-red {
+            color: #ef4444;
+            text-shadow: 0 0 8px #ef4444;
+        }
+
+        .led-green {
+            color: #22c55e;
+            text-shadow: 0 0 10px #22c55e;
+            animation: pulseArrow 0.8s infinite alternate;
+        }
+
+        @keyframes pulseArrow {
+            from { opacity: 0.6; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1.1); }
+        }
+
+        /* Механизм трипода (планки) */
+        .tripod-hub {
+            position: absolute;
+            bottom: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 36px;
+            height: 24px;
+            background: #334155;
+            border-radius: 0 0 8px 8px;
+            border: 2px solid #64748b;
+            z-index: 12;
+        }
+
+        /* Преграждающая планка */
+        .barrier-arm {
+            position: absolute;
+            top: 14px;
+            left: 50%;
+            width: 14px;
+            height: 115px;
+            margin-left: -7px;
+            background: linear-gradient(90deg, #cbd5e1, #ffffff, #64748b);
+            border-radius: 4px 4px 8px 8px;
+            border: 1px solid #475569;
+            transform-origin: top center;
+            transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s;
+            box-shadow: 0 8px 12px rgba(0,0,0,0.5);
+            z-index: 11;
+        }
+
+        /* Красная светоотражающая полоса на конце штанги */
+        .barrier-arm::after {
+            content: '';
+            position: absolute;
+            bottom: 8px;
+            left: 0;
+            right: 0;
+            height: 12px;
+            background: #ef4444;
+        }
+
+        /* Состояние Антипаники (планка упала вниз) */
+        .barrier-arm.dropped {
+            transform: scaleY(0.18) rotateX(75deg);
+            opacity: 0.55;
+            background: #f59e0b;
+        }
+
+        /* Анимация прокрутки планки при проходе */
+        .barrier-arm.rotate-left {
+            animation: spinLeft 0.6s ease-in-out;
+        }
+
+        .barrier-arm.rotate-right {
+            animation: spinRight 0.6s ease-in-out;
+        }
+
+        @keyframes spinLeft {
+            0% { transform: rotate(0deg) scaleY(1); }
+            50% { transform: rotate(75deg) scaleY(0.35); opacity: 0.6; }
+            100% { transform: rotate(0deg) scaleY(1); }
+        }
+
+        @keyframes spinRight {
+            0% { transform: rotate(0deg) scaleY(1); }
+            50% { transform: rotate(-75deg) scaleY(0.35); opacity: 0.6; }
+            100% { transform: rotate(0deg) scaleY(1); }
+        }
+
+        /* Кнопка имитации прохода человека */
+        .pass-action-area {
+            margin-top: 25px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .sim-person-btn {
+            background: #334155;
+            color: #f8fafc;
+            border: 1px solid #475569;
+            padding: 10px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .sim-person-btn:hover {
+            background: #475569;
+            border-color: #94a3b8;
+        }
+
+        .sim-person-btn:active {
+            transform: scale(0.97);
+        }
+
+        /* ВЫНОСНОЙ ПУЛЬТ УПРАВЛЕНИЯ */
+        .remote-control {
+            background: linear-gradient(145deg, #273449, #1a2332);
+            border: 2px solid #475569;
+            border-radius: 20px;
+            padding: 24px;
+            width: 340px;
+            box-shadow: 0 20px 30px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .remote-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 12px;
+        }
+
+        .remote-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #cbd5e1;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .remote-cable {
+            font-size: 0.75rem;
+            color: #64748b;
+            background: #0f172a;
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+
+        /* Сетка кнопок пульта */
+        .remote-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .ctrl-btn {
+            position: relative;
+            background: #1e293b;
+            border: 2px solid #334155;
+            border-radius: 12px;
+            padding: 16px 10px;
+            color: #f8fafc;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.15s;
+            box-shadow: 0 4px 0 #0f172a;
+        }
+
+        .ctrl-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #0f172a;
+        }
+
+        .ctrl-btn .icon {
+            font-size: 1.6rem;
+        }
+
+        .ctrl-btn .label {
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .ctrl-btn .led-dot {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #334155;
+        }
+
+        /* Активные состояния кнопок */
+        .ctrl-btn.active-green {
+            border-color: #22c55e;
+            background: rgba(34, 197, 94, 0.15);
+        }
+        .ctrl-btn.active-green .led-dot {
+            background: #22c55e;
+            box-shadow: 0 0 8px #22c55e;
+        }
+
+        .ctrl-btn.active-amber {
+            border-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.18);
+        }
+        .ctrl-btn.active-amber .led-dot {
+            background: #f59e0b;
+            box-shadow: 0 0 8px #f59e0b;
+        }
+
+        .ctrl-btn.active-red {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.18);
+        }
+        .ctrl-btn.active-red .led-dot {
+            background: #ef4444;
+            box-shadow: 0 0 8px #ef4444;
+        }
+
+        /* Полная ширина для важных кнопок */
+        .span-2 {
+            grid-column: span 2;
+        }
+
+        /* Счетчик проходов */
+        .counters {
+            display: flex;
+            justify-content: space-between;
+            background: #0f172a;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid #334155;
+            font-size: 0.85rem;
+        }
+
+        .counter-box span {
+            font-weight: bold;
+            color: #38bdf8;
+            font-size: 1rem;
+        }
+
+        /* Лог событий */
+        .log-panel {
+            width: 100%;
+            max-width: 1100px;
+            margin-top: 25px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        .clear-log {
+            background: transparent;
+            border: 1px solid #475569;
+            color: #94a3b8;
+            padding: 3px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+
+        .clear-log:hover {
+            color: #fff;
+            border-color: #94a3b8;
+        }
+
+        .log-list {
+            height: 130px;
+            overflow-y: auto;
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 10px;
+            font-family: 'Consolas', monospace;
+            font-size: 0.82rem;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .log-item {
+            display: flex;
+            gap: 10px;
+            border-bottom: 1px solid #1e293b;
+            padding-bottom: 4px;
+        }
+
+        .log-time { color: #64748b; }
+        .log-info { color: #e2e8f0; }
+        .log-warn { color: #fbbf24; }
+        .log-danger { color: #f87171; }
+        .log-success { color: #4ade80; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1><span class="zk-badge">ZKTeco</span> Симулятор электронного трипода (TS1000 / TS2000)</h1>
+        <p class="subtitle">Управление с проводного пульта • Имитация прохода и сброса штанги «Антипаника»</p>
+    </header>
+
+    <div class="workspace">
+        <!-- Левая часть: Турникет -->
+        <div class="turnstile-stage">
+            <div class="status-banner">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">РЕЖИМ ОЖИДАНИЯ (ЗАБЛОКИРОВАНО)</span>
+            </div>
+
+            <div class="turnstile-scene">
+                <div class="walkway">
+                    <span>⬅️ ВХОД (Зона А)</span>
+                    <span>ВЫХОД (Зона Б) ➡️</span>
+                </div>
+
+                <div class="cabinet">
+                    <!-- Левый индикатор -->
+                    <div class="led-panel led-red" id="ledLeft">✖</div>
+
+                    <!-- Верхняя панель со считывателем -->
+                    <div class="cabinet-top-trim">
+                        <div class="zk-logo-plate">ZK<span>Teco</span></div>
+                        <div class="rfid-reader" onclick="simulateCardSwipe()" title="Нажмите, чтобы приложить карту RFID">
+                            <span class="rfid-waves">))) 💳</span>
+                            <span class="rfid-label">RFID</span>
+                        </div>
+                    </div>
+
+                    <!-- Правый индикатор -->
+                    <div class="led-panel led-red" id="ledRight">✖</div>
+
+                    <!-- Узел вращения и штанга -->
+                    <div class="tripod-hub">
+                        <div class="barrier-arm" id="barrierArm"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Кнопки имитации физического прохода человека -->
+            <div class="pass-action-area">
+                <button class="sim-person-btn" onclick="attemptPass('left')">
+                    🚶‍♂️ Пройти влево (Вход)
+                </button>
+                <button class="sim-person-btn" onclick="attemptPass('right')">
+                    🚶‍♂️ Пройти вправо (Выход)
+                </button>
+            </div>
+        </div>
+
+        <!-- Правая часть: Пульт управления -->
+        <div class="remote-control">
+            <div class="remote-header">
+                <span class="remote-title">Пульт управления</span>
+                <span class="remote-cable">🔌 RS485 / Dry Contact</span>
+            </div>
+
+            <div class="remote-grid">
+                <!-- Кнопка 1: Прокрутка влево -->
+                <button class="ctrl-btn" id="btnLeft" onclick="cmdUnlock('left')">
+                    <span class="led-dot"></span>
+                    <span class="icon">⬅️</span>
+                    <span class="label">Прокрутка<br>ВЛЕВО (Вход)</span>
+                </button>
+
+                <!-- Кнопка 2: Прокрутка вправо -->
+                <button class="ctrl-btn" id="btnRight" onclick="cmdUnlock('right')">
+                    <span class="led-dot"></span>
+                    <span class="icon">➡️</span>
+                    <span class="label">Прокрутка<br>ВПРАВО (Выход)</span>
+                </button>
+
+                <!-- Кнопка 3: Антипаника -->
+                <button class="ctrl-btn span-2" id="btnPanic" onclick="cmdAntiPanic()">
+                    <span class="led-dot"></span>
+                    <span class="icon">⚠️</span>
+                    <span class="label">АНТИПАНИКА (Сброс планки)</span>
+                </button>
+
+                <!-- Кнопка 4: Принудительная блокировка -->
+                <button class="ctrl-btn span-2" id="btnLock" onclick="cmdForceLock()">
+                    <span class="led-dot"></span>
+                    <span class="icon">🔒</span>
+                    <span class="label">ПРИНУДИТЕЛЬНАЯ БЛОКИРОВКА</span>
+                </button>
+            </div>
+
+            <div class="counters">
+                <div class="counter-box">Входов (⬅️): <span id="countLeft">0</span></div>
+                <div class="counter-box">Выходов (➡️): <span id="countRight">0</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Журнал событий -->
+    <div class="log-panel">
+        <div class="log-header">
+            <span>📋 Журнал контроллера доступа ZKTeco C3-100</span>
+            <button class="clear-log" onclick="clearLog()">Очистить</button>
+        </div>
+        <div class="log-list" id="logList"></div>
+    </div>
+
+    <script>
+        // Состояния системы:
+        // 'IDLE'       - штатный режим ожидания (закрыто, ждет команду или карту)
+        // 'OPEN_LEFT'  - разрешен однократный проход влево
+        // 'OPEN_RIGHT' - разрешен однократный проход вправо
+        // 'PANIC'      - антипаника (планка сброшена, свободный проход)
+        // 'LOCKED'     - принудительная полная блокировка (игнорирует карты)
+        let state = 'IDLE';
+        let countLeft = 0;
+        let countRight = 0;
+        let autoCloseTimer = null;
+
+        // Звуковой синтезатор (Web Audio API) для реалистичности
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playTone(freq, type, duration) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        // Логирование событий
+        function addLog(message, type = 'info') {
+            const logList = document.getElementById('logList');
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('ru-RU');
+            const item = document.createElement('div');
+            item.className = 'log-item';
+            item.innerHTML = `<span class="log-time">[${timeStr}]</span><span class="log-${type}">${message}</span>`;
+            logList.prepend(item);
+        }
+
+        function clearLog() {
+            document.getElementById('logList').innerHTML = '';
+        }
+
+        // Обновление интерфейса в соответствии с текущим состоянием
+        function updateUI() {
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            const ledLeft = document.getElementById('ledLeft');
+            const ledRight = document.getElementById('ledRight');
+            const arm = document.getElementById('barrierArm');
+
+            const btnLeft = document.getElementById('btnLeft');
+            const btnRight = document.getElementById('btnRight');
+            const btnPanic = document.getElementById('btnPanic');
+            const btnLock = document.getElementById('btnLock');
+
+            // Сброс классов кнопок
+            btnLeft.className = 'ctrl-btn';
+            btnRight.className = 'ctrl-btn';
+            btnPanic.className = 'ctrl-btn span-2';
+            btnLock.className = 'ctrl-btn span-2';
+
+            if (state === 'IDLE') {
+                statusDot.style.background = '#64748b';
+                statusDot.style.boxShadow = '0 0 8px #64748b';
+                statusText.textContent = 'РЕЖИМ ОЖИДАНИЯ (ШТАТНО ЗАКРЫТ)';
+                
+                ledLeft.className = 'led-panel led-red';
+                ledLeft.textContent = '✖';
+                ledRight.className = 'led-panel led-red';
+                ledRight.textContent = '✖';
+                
+                arm.classList.remove('dropped');
+            } 
+            else if (state === 'OPEN_LEFT') {
+                statusDot.style.background = '#22c55e';
+                statusDot.style.boxShadow = '0 0 8px #22c55e';
+                statusText.textContent = 'РАЗРЕШЕН ПРОХОД ВЛЕВО (ВХОД)';
+                
+                ledLeft.className = 'led-panel led-green';
+                ledLeft.textContent = '⬅';
+                ledRight.className = 'led-panel led-red';
+                ledRight.textContent = '✖';
+                
+                btnLeft.classList.add('active-green');
+                arm.classList.remove('dropped');
+            } 
+            else if (state === 'OPEN_RIGHT') {
+                statusDot.style.background = '#22c55e';
+                statusDot.style.boxShadow = '0 0 8px #22c55e';
+                statusText.textContent = 'РАЗРЕШЕН ПРОХОД ВПРАВО (ВЫХОД)';
+                
+                ledLeft.className = 'led-panel led-red';
+                ledLeft.textContent = '✖';
+                ledRight.className = 'led-panel led-green';
+                ledRight.textContent = '➡';
+                
+                btnRight.classList.add('active-green');
+                arm.classList.remove('dropped');
+            } 
+            else if (state === 'PANIC') {
+                statusDot.style.background = '#f59e0b';
+                statusDot.style.boxShadow = '0 0 10px #f59e0b';
+                statusText.textContent = 'ТРЕВОГА: АНТИПАНИКА (ПЛАНКА СБРОШЕНА)';
+                
+                ledLeft.className = 'led-panel led-green';
+                ledLeft.textContent = '⬇';
+                ledRight.className = 'led-panel led-green';
+                ledRight.textContent = '⬇';
+                
+                btnPanic.classList.add('active-amber');
+                arm.classList.add('dropped');
+            } 
+            else if (state === 'LOCKED') {
+                statusDot.style.background = '#ef4444';
+                statusDot.style.boxShadow = '0 0 10px #ef4444';
+                statusText.textContent = 'ПРИНУДИТЕЛЬНАЯ БЛОКИРОВКА (ДОСТУП ЗАПРЕЩЕН)';
+                
+                ledLeft.className = 'led-panel led-red';
+                ledLeft.textContent = '⛔';
+                ledRight.className = 'led-panel led-red';
+                ledRight.textContent = '⛔';
+                
+                btnLock.classList.add('active-red');
+                arm.classList.remove('dropped');
+            }
+        }
+
+        // Команда с пульта: Разблокировка в одну из сторон
+        function cmdUnlock(direction) {
+            if (state === 'PANIC') {
+                addLog('Невозможно открыть: активен режим АНТИПАНИКА. Сначала поднимите планку.', 'warn');
+                playTone(200, 'sawtooth', 0.25);
+                return;
+            }
+            if (state === 'LOCKED') {
+                addLog('Снятие принудительной блокировки оператором...', 'info');
+            }
+
+            clearTimeout(autoCloseTimer);
+            playTone(880, 'sine', 0.15);
+
+            if (direction === 'left') {
+                state = 'OPEN_LEFT';
+                addLog('Пульт: Разрешена однократная прокрутка ВЛЕВО (Вход).', 'success');
+            } else {
+                state = 'OPEN_RIGHT';
+                addLog('Пульт: Разрешена однократная прокрутка ВПРАВО (Выход).', 'success');
+            }
+
+            updateUI();
+
+            // Автоматическое закрытие через 6 секунд, если никто не прошел
+            autoCloseTimer = setTimeout(() => {
+                if (state === 'OPEN_LEFT' || state === 'OPEN_RIGHT') {
+                    state = 'IDLE';
+                    addLog('Тайм-аут ожидания прохода (6 сек). Турникет закрыт.', 'info');
+                    playTone(440, 'sine', 0.1);
+                    updateUI();
+                }
+            }, 6000);
+        }
+
+        // Команда с пульта: Антипаника (сброс/восстановление штанги)
+        function cmdAntiPanic() {
+            clearTimeout(autoCloseTimer);
+            if (state !== 'PANIC') {
+                state = 'PANIC';
+                playTone(600, 'square', 0.35);
+                addLog('ВНИМАНИЕ! Нажата кнопка АНТИПАНИКА. Электромагнит обесточен, штанга упала!', 'warn');
+            } else {
+                state = 'IDLE';
+                playTone(520, 'sine', 0.2);
+                addLog('Режим АНТИПАНИКА отключен. Преграждающая штанга взведена в рабочее положение.', 'info');
+            }
+            updateUI();
+        }
+
+        // Команда с пульта: Принудительная блокировка
+        function cmdForceLock() {
+            clearTimeout(autoCloseTimer);
+            if (state !== 'LOCKED') {
+                state = 'LOCKED';
+                playTone(240, 'sawtooth', 0.3);
+                addLog('Активирована ПРИНУДИТЕЛЬНАЯ БЛОКИРОВКА. Проход и считывание карт заблокированы.', 'danger');
+            } else {
+                state = 'IDLE';
+                playTone(520, 'sine', 0.15);
+                addLog('Принудительная блокировка снята. Турникет переведен в штатный режим.', 'info');
+            }
+            updateUI();
+        }
+
+        // Имитация прикладывания карты RFID к считывателю
+        function simulateCardSwipe() {
+            if (state === 'LOCKED') {
+                playTone(180, 'sawtooth', 0.3);
+                addLog('Карта RFID приложена, но проход ОТКЛОНЕН (активна принудительная блокировка).', 'danger');
+                return;
+            }
+            if (state === 'PANIC') {
+                addLog('Карта RFID приложена (штанга опущена в режиме Антипаника, проход свободный).', 'warn');
+                return;
+            }
+            addLog('Считана карта RFID #048291A. Доступ разрешен.', 'success');
+            cmdUnlock('left');
+        }
+
+        // Имитация физического прохода человека через турникет
+        function attemptPass(direction) {
+            const arm = document.getElementById('barrierArm');
+
+            // Если режим Антипаники - проход свободный без вращения
+            if (state === 'PANIC') {
+                playTone(700, 'sine', 0.1);
+                if (direction === 'left') {
+                    countLeft++;
+                    document.getElementById('countLeft').textContent = countLeft;
+                    addLog('Свободный проход ВЛЕВО при опущенной планке (Антипаника).', 'warn');
+                } else {
+                    countRight++;
+                    document.getElementById('countRight').textContent = countRight;
+                    addLog('Свободный проход ВПРАВО при опущенной планке (Антипаника).', 'warn');
+                }
+                return;
+            }
+
+            // Проверка разрешения в нужную сторону
+            if (direction === 'left' && state === 'OPEN_LEFT') {
+                clearTimeout(autoCloseTimer);
+                playTone(1046, 'sine', 0.12);
+                
+                // Анимация проворачивания ротора
+                arm.classList.remove('rotate-left', 'rotate-right');
+                void arm.offsetWidth; // перезапуск анимации
+                arm.classList.add('rotate-left');
+
+                countLeft++;
+                document.getElementById('countLeft').textContent = countLeft;
+                addLog('Проход ВЛЕВО выполнен. Ротор провернулся на 120° и заблокирован.', 'success');
+                
+                state = 'IDLE';
+                updateUI();
+            } 
+            else if (direction === 'right' && state === 'OPEN_RIGHT') {
+                clearTimeout(autoCloseTimer);
+                playTone(1046, 'sine', 0.12);
+
+                arm.classList.remove('rotate-left', 'rotate-right');
+                void arm.offsetWidth;
+                arm.classList.add('rotate-right');
+
+                countRight++;
+                document.getElementById('countRight').textContent = countRight;
+                addLog('Проход ВПРАВО выполнен. Ротор провернулся на 120° и заблокирован.', 'success');
+                
+                state = 'IDLE';
+                updateUI();
+            } 
+            else {
+                // Попытка несанкционированного прохода или не в ту сторону
+                playTone(150, 'sawtooth', 0.35);
+                const dirName = direction === 'left' ? 'ВЛЕВО' : 'ВПРАВО';
+                addLog(`ПОПЫТКА ПРОХОДА ${dirName}: Механизм заблокирован!`, 'danger');
+                
+                // Легкое подергивание закрытой планки
+                arm.style.transform = direction === 'left' ? 'rotate(6deg)' : 'rotate(-6deg)';
+                setTimeout(() => {
+                    if (state !== 'PANIC') arm.style.transform = '';
+                }, 180);
+            }
+        }
+
+        // Инициализация при загрузке
+        updateUI();
+        addLog('Контроллер ZKTeco запущен. Система готова к работе.', 'info');
+    </script>
+</body>
+</html>
