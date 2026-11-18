@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Симулятор турникетов ZKTeco (TS2000, Mars-B, PB1000)</title>
+    <title>Симулятор турникетов ZKTeco</title>
     <style>
         :root {
             --zk-green: #00a859;
@@ -53,17 +53,17 @@
 
         .subtitle {
             color: #94a3b8;
-            font-size: 0.82rem;
-            margin-top: 4px;
+            font-size: 0.85rem;
+            margin-top: 5px;
         }
 
         /* Выбор модели турникета */
         .model-selector {
             display: flex;
             gap: 8px;
-            margin-bottom: 18px;
+            margin-bottom: 20px;
             background: #1e293b;
-            padding: 5px;
+            padding: 6px;
             border-radius: 12px;
             border: 1px solid #334155;
             flex-wrap: wrap;
@@ -74,11 +74,11 @@
             background: transparent;
             border: none;
             color: #94a3b8;
-            padding: 7px 14px;
+            padding: 8px 16px;
             border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             transition: all 0.2s;
         }
 
@@ -120,7 +120,7 @@
             padding: 8px 16px;
             border-radius: 20px;
             font-weight: 600;
-            font-size: 0.82rem;
+            font-size: 0.85rem;
             margin-bottom: 20px;
             display: flex;
             align-items: center;
@@ -132,21 +132,20 @@
             width: 10px;
             height: 10px;
             border-radius: 50%;
-            background: #ef4444;
-            box-shadow: 0 0 8px #ef4444;
+            background: #64748b;
         }
 
         .turnstile-scene {
             position: relative;
             width: 100%;
-            height: 220px;
+            height: 210px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        /* --- МОДЕЛЬ 1: ZKTeco TS2000 Pro (Трипод тумбовый с полусферическими крышками) --- */
-        .model-ts2000 .cabinet-pro {
+        /* --- МОДЕЛЬ 1: ZKTeco TS2000 Pro (Трипод) --- */
+        .cabinet-pro {
             position: relative;
             width: 260px;
             height: 85px;
@@ -159,7 +158,7 @@
             padding: 0 16px;
             box-shadow: 0 12px 22px rgba(0,0,0,0.6);
         }
-        .model-ts2000 .glass-top {
+        .glass-top {
             position: absolute;
             top: 4px; left: 45px; right: 45px; height: 73px;
             background: #0f172a;
@@ -170,504 +169,9 @@
             padding: 0 15px;
             border: 1px solid #334155;
         }
-        .model-ts2000 .tripod-hub-pro {
+        .tripod-hub-pro {
             position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%);
             width: 30px; height: 20px; background: #334155; border-radius: 0 0 6px 6px;
         }
-        .model-ts2000 .barrier-arm-pro {
-            position: absolute; top: 10px; left: 50%; width: 12px; height: 100px; margin-left: -6px;
-            background: linear-gradient(90deg, #cbd5e1, #fff, #64748b);
-            border-radius: 4px; transform-origin: top center;
-            transition: transform 0.4s ease;
-        }
-        .model-ts2000 .barrier-arm-pro::after {
-            content: ''; position: absolute; bottom: 6px; left: 0; right: 0; height: 10px; background: #ef4444;
-        }
-        .model-ts2000 .spin-l { animation: spinL 0.5s ease-in-out; }
-        .model-ts2000 .spin-r { animation: spinR 0.5s ease-in-out; }
-        @keyframes spinL { 0% {transform: rotate(0);} 50% {transform: rotate(70deg) scaleY(0.3);} 100% {transform: rotate(0);} }
-        @keyframes spinR { 0% {transform: rotate(0);} 50% {transform: rotate(-70deg) scaleY(0.3);} 100% {transform: rotate(0);} }
-
-
-        /* --- МОДЕЛЬ 2: ZKTeco Mars-B1000 (Элегантный скоростной турникет с матовыми створками) --- */
-        .model-mars .mars-body {
-            display: flex;
-            width: 300px;
-            height: 85px;
-            justify-content: space-between;
-            align-items: center;
-            position: relative;
-        }
-        .mars-pillar {
-            width: 60px;
-            height: 85px;
-            background: linear-gradient(135deg, #1e293b, #0f172a);
-            border: 2px solid #475569;
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.5);
-        }
-        .mars-wing {
-            position: absolute;
-            top: 32px;
-            width: 95px;
-            height: 18px;
-            background: rgba(14, 165, 233, 0.25);
-            border: 2px solid #38bdf8;
-            border-radius: 9px;
-            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .wing-left { left: 55px; transform-origin: left center; }
-        .wing-right { right: 55px; transform-origin: right center; }
-
-        /* Открытие створок Mars (штанга/створка убирается внутрь тумбы, но физически штанга на месте) */
-        .model-mars.open-l .wing-left { transform: translateX(-40px) scaleX(0.2); opacity: 0.2; }
-        .model-mars.open-r .wing-right { transform: translateX(40px) scaleX(0.2); opacity: 0.2; }
-        .model-mars.open-both .wing-left { transform: translateX(-40px) scaleX(0.2); opacity: 0.2; }
-        .model-mars.open-both .wing-right { transform: translateX(40px) scaleX(0.2); opacity: 0.2; }
-
-
-        /* --- МОДЕЛЬ 3: ZKTeco PB1000 (Турникет-калитка / полуавтоматическая распашная створка) --- */
-        .model-pb .pb-body {
-            position: relative;
-            width: 240px;
-            height: 80px;
-            background: linear-gradient(180deg, #334155, #1e293b);
-            border: 2px solid #64748b;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 15px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-        }
-        .pb-gate-arm {
-            position: absolute;
-            bottom: 35px;
-            left: 120px;
-            width: 110px;
-            height: 12px;
-            background: linear-gradient(90deg, #f59e0b, #fbbf24);
-            border-radius: 6px;
-            transform-origin: left center;
-            transition: transform 0.4s ease;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-        }
-        .model-pb.open-l .pb-gate-arm { transform: rotate(-75deg); }
-        .model-pb.open-r .pb-gate-arm { transform: rotate(75deg); }
-        .model-pb.open-both .pb-gate-arm { transform: scaleX(0.1); opacity: 0.3; }
-
-
-        /* Светодиоды */
-        .led-panel {
-            width: 20px; height: 42px; background: #090d16; border-radius: 4px;
-            border: 1px solid #334155; display: flex; align-items: center; justify-content: center;
-            font-size: 0.9rem; font-weight: bold;
-        }
-        .led-red { color: #ef4444; text-shadow: 0 0 6px #ef4444; }
-        .led-green { color: #22c55e; text-shadow: 0 0 8px #22c55e; animation: pulse 0.7s infinite alternate; }
-        @keyframes pulse { from {opacity: 0.5;} to {opacity: 1;} }
-
-        /* Кнопка считывателя */
-        .rfid-box {
-            background: #0f172a; border: 1px solid var(--zk-blue); border-radius: 4px;
-            padding: 3px 6px; cursor: pointer; text-align: center; font-size: 0.65rem; color: #38bdf8;
-        }
-        .rfid-box:hover { background: rgba(0,114,206,0.3); }
-
-        .pass-action-area {
-            margin-top: 18px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
-        }
-        .sim-btn {
-            background: #334155; color: #f8fafc; border: 1px solid #475569;
-            padding: 7px 12px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 600;
-        }
-        .sim-btn:hover { background: #475569; }
-
-        /* ПУЛЬТ УПРАВЛЕНИЯ */
-        .remote-control {
-            background: linear-gradient(145deg, #273449, #1a2332);
-            border: 2px solid #475569; border-radius: 20px; padding: 22px; width: 320px;
-            box-shadow: 0 20px 30px rgba(0,0,0,0.6); display: flex; flex-direction: column; gap: 14px;
-        }
-        .remote-header {
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid #334155; padding-bottom: 10px; font-size: 0.88rem; font-weight: 700;
-        }
-        .remote-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .ctrl-btn {
-            position: relative; background: #1e293b; border: 2px solid #334155; border-radius: 10px;
-            padding: 14px 8px; color: #f8fafc; cursor: pointer; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 0 #0f172a;
-            transition: all 0.1s;
-        }
-        .ctrl-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #0f172a; }
-        .ctrl-btn .icon { font-size: 1.3rem; }
-        .ctrl-btn .label { font-size: 0.75rem; font-weight: 700; text-align: center; }
-        .ctrl-btn .led-dot {
-            position: absolute; top: 6px; right: 6px; width: 7px; height: 7px; border-radius: 50%; background: #334155;
-        }
-
-        .ctrl-btn.active-green { border-color: #22c55e; background: rgba(34, 197, 94, 0.15); }
-        .ctrl-btn.active-green .led-dot { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
-        .ctrl-btn.active-amber { border-color: #f59e0b; background: rgba(245, 158, 11, 0.18); }
-        .ctrl-btn.active-amber .led-dot { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
-        .ctrl-btn.active-red { border-color: #ef4444; background: rgba(239, 68, 68, 0.18); }
-        .ctrl-btn.active-red .led-dot { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
-
-        .span-2 { grid-column: span 2; }
-
-        .counters {
-            display: flex; justify-content: space-between; background: #0f172a; padding: 10px;
-            border-radius: 8px; border: 1px solid #334155; font-size: 0.8rem;
-        }
-        .counters span { color: #38bdf8; font-weight: bold; }
-
-        /* Лог */
-        .log-panel {
-            width: 100%; max-width: 1025px; margin-top: 20px; background: #1e293b;
-            border: 1px solid #334155; border-radius: 12px; padding: 14px;
-        }
-        .log-list {
-            height: 110px; overflow-y: auto; background: #0f172a; border-radius: 8px;
-            padding: 8px; font-family: 'Consolas', monospace; font-size: 0.78rem; display: flex; flex-direction: column; gap: 4px;
-        }
-        .log-item { display: flex; gap: 8px; border-bottom: 1px solid #161e2e; padding-bottom: 3px; }
-        .log-time { color: #64748b; }
-        .log-info { color: #e2e8f0; }
-        .log-warn { color: #fbbf24; }
-        .log-danger { color: #f87171; }
-        .log-success { color: #4ade80; }
-    </style>
-</head>
-<body>
-
-    <header>
-        <h1><span class="zk-badge">ZKTeco</span> Симулятор КПП и проходной</h1>
-        <p class="subtitle">Двойной клик на кнопку пульта (Влево/Вправо) включает беспрепятственный проход (штанга на месте)</p>
-    </header>
-
-    <!-- Переключатель моделей -->
-    <div class="model-selector">
-        <button class="model-tab active" onclick="switchModel('ts2000')">1. ZKTeco TS2000 Pro (Трипод)</button>
-        <button class="model-tab" onclick="switchModel('mars')">2. ZKTeco Mars-B1000 (Скоростной)</button>
-        <button class="model-tab" onclick="switchModel('pb')">3. ZKTeco PB1000 (Калитка)</button>
-    </div>
-
-    <div class="workspace">
-        <!-- Визуализация турникета -->
-        <div class="turnstile-stage" id="stageContainer">
-            <div class="status-banner">
-                <div class="status-dot" id="statusDot"></div>
-                <span id="statusText">ШТАТНЫЙ РЕЖИМ (ЗАКРЫТО)</span>
-            </div>
-
-            <div class="turnstile-scene" id="turnstileView"></div>
-
-            <div class="pass-action-area">
-                <button class="sim-btn" onclick="attemptPass('left')">🚶‍♂️ Имитация прохода ВЛЕВО</button>
-                <button class="sim-btn" onclick="attemptPass('right')">🚶‍♂️ Имитация прохода ВПРАВО</button>
-            </div>
-        </div>
-
-        <!-- Пульт управления -->
-        <div class="remote-control">
-            <div class="remote-header">
-                <span>Пульт ДУ (RS485)</span>
-                <span style="font-size: 0.68rem; color: #38bdf8;">⚡ Двойной клик = Свободно</span>
-            </div>
-
-            <div class="remote-grid">
-                <button class="ctrl-btn" id="btnLeft" onclick="handleButtonAction('left')">
-                    <span class="led-dot"></span>
-                    <span class="icon">⬅️</span>
-                    <span class="label">ВЛЕВО<br>(Вход)</span>
-                </button>
-
-                <button class="ctrl-btn" id="btnRight" onclick="handleButtonAction('right')">
-                    <span class="led-dot"></span>
-                    <span class="icon">➡️</span>
-                    <span class="label">ВПРАВО<br>(Выход)</span>
-                </button>
-
-                <button class="ctrl-btn span-2" id="btnPanic" onclick="handleButtonAction('panic')">
-                    <span class="led-dot"></span>
-                    <span class="icon">⚠️</span>
-                    <span class="label">АНТИПАНИКА (Сброс тревоги)</span>
-                </button>
-
-                <button class="ctrl-btn span-2" id="btnLock" onclick="handleButtonAction('lock')">
-                    <span class="led-dot"></span>
-                    <span class="icon">🔒</span>
-                    <span class="label">ПРИНУДИТЕЛЬНАЯ БЛОКИРОВКА</span>
-                </button>
-            </div>
-
-            <div class="counters">
-                <div>Входов: <span id="countLeft">0</span></div>
-                <div>Выходов: <span id="countRight">0</span></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Журнал событий -->
-    <div class="log-panel">
-        <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.82rem; color:#94a3b8;">
-            <span>📋 Лог контроллера доступа ZKTeco</span>
-            <button onclick="document.getElementById('logList').innerHTML=''" style="background:none; border:none; color:#94a3b8; cursor:pointer;">Очистить</button>
-        </div>
-        <div class="log-list" id="logList"></div>
-    </div>
-
-    <script>
-        let currentModel = 'ts2000'; // 'ts2000', 'mars', 'pb'
-        let state = 'IDLE'; // 'IDLE', 'OPEN_LEFT', 'OPEN_RIGHT', 'FREE_LEFT', 'FREE_RIGHT', 'PANIC', 'LOCKED'
-        let countLeft = 0;
-        let countRight = 0;
-        let autoCloseTimer = null;
-        let lastClickTime = 0;
-        let lastClickButton = '';
-
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playTone(freq, type, duration) {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + duration);
-        }
-
-        function addLog(msg, type = 'info') {
-            const list = document.getElementById('logList');
-            const time = new Date().toLocaleTimeString('ru-RU');
-            list.innerHTML = `<div class="log-item"><span class="log-time">[${time}]</span><span class="log-${type}">${msg}</span></div>` + list.innerHTML;
-        }
-
-        function switchModel(model) {
-            currentModel = model;
-            document.querySelectorAll('.model-tab').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
-            state = 'IDLE';
-            renderModelHTML();
-            updateUI();
-            addLog(`Выбрана модель турникета: ${model.toUpperCase()}`, 'info');
-        }
-
-        function renderModelHTML() {
-            const container = document.getElementById('turnstileView');
-            if (currentModel === 'ts2000') {
-                container.className = 'turnstile-scene model-ts2000';
-                container.innerHTML = `
-                    <div class="cabinet-pro">
-                        <div class="led-panel led-red" id="ledLeft">✖</div>
-                        <div class="glass-top">
-                            <span style="color:#fff; font-weight:800; font-size:0.75rem;">ZK<span style="color:var(--zk-green)">Teco</span></span>
-                            <div class="rfid-box" onclick="simulateCard()">RFID 💳</div>
-                        </div>
-                        <div class="led-panel led-red" id="ledRight">✖</div>
-                        <div class="tripod-hub-pro"><div class="barrier-arm-pro" id="barrierArm"></div></div>
-                    </div>`;
-            } else if (currentModel === 'mars') {
-                container.className = 'turnstile-scene model-mars';
-                container.innerHTML = `
-                    <div class="mars-body">
-                        <div class="mars-pillar">
-                            <div class="led-panel led-red" id="ledLeft" style="height:34px; width:16px; font-size:0.75rem;">✖</div>
-                            <div class="rfid-box" style="font-size:0.5rem; padding:2px;" onclick="simulateCard()">RFID</div>
-                        </div>
-                        <div class="mars-wing wing-left"></div>
-                        <div class="mars-wing wing-right"></div>
-                        <div class="mars-pillar">
-                            <div class="led-panel led-red" id="ledRight" style="height:34px; width:16px; font-size:0.75rem;">✖</div>
-                            <div class="rfid-box" style="font-size:0.5rem; padding:2px;" onclick="simulateCard()">RFID</div>
-                        </div>
-                    </div>`;
-            } else if (currentModel === 'pb') {
-                container.className = 'turnstile-scene model-pb';
-                container.innerHTML = `
-                    <div class="pb-body" style="width:100%; height:80px; display:flex; justify-content:space-between; align-items:center; position:relative;">
-                        <div class="led-panel led-red" id="ledLeft">✖</div>
-                        <div style="display:flex; flex-direction:column; align-items:center;">
-                            <span style="color:#fff; font-size:0.7rem; font-weight:bold;">PB1000 GATE</span>
-                            <div class="rfid-box" onclick="simulateCard()">RFID 💳</div>
-                        </div>
-                        <div class="led-panel led-red" id="ledRight">✖</div>
-                        <div class="pb-gate-arm" id="pbArm"></div>
-                    </div>`;
-            }
-        }
-
-        // Обработка кликов на пульте с детектированием двойного нажатия (Беспрепятственный доступ, штанга на месте)
-        function handleButtonAction(btnName) {
-            const now = Date.now();
-            const isDouble = (btnName === lastClickButton && (now - lastClickTime) < 1000);
-            lastClickButton = btnName;
-            lastClickTime = now;
-
-            if (btnName === 'left') {
-                if (isDouble) {
-                    state = (state === 'FREE_LEFT') ? 'IDLE' : 'FREE_LEFT';
-                    addLog(state === 'FREE_LEFT' ? '🔓 Беспрепятственный доступ ВЛЕВО (штанга на месте зафиксирована в режиме прохода).' : 'Режим свободного прохода выключен.', 'success');
-                    playTone(920, 'sine', 0.2);
-                } else {
-                    cmdUnlock('left');
-                }
-            } else if (btnName === 'right') {
-                if (isDouble) {
-                    state = (state === 'FREE_RIGHT') ? 'IDLE' : 'FREE_RIGHT';
-                    addLog(state === 'FREE_RIGHT' ? '🔓 Беспрепятственный доступ ВПРАВО (штанга на месте зафиксирована в режиме прохода).' : 'Режим свободного прохода выключен.', 'success');
-                    playTone(920, 'sine', 0.2);
-                } else {
-                    cmdUnlock('right');
-                }
-            } else if (btnName === 'panic') {
-                cmdAntiPanic();
-            } else if (btnName === 'lock') {
-                cmdForceLock();
-            }
-            updateUI();
-        }
-
-        function cmdUnlock(dir) {
-            if (state === 'PANIC' || state === 'LOCKED') return;
-            clearTimeout(autoCloseTimer);
-            playTone(800, 'sine', 0.15);
-            state = (dir === 'left') ? 'OPEN_LEFT' : 'OPEN_RIGHT';
-            addLog(`Пульт: Однократный проход ${dir === 'left' ? 'ВЛЕВО' : 'ВПРАВО'} разрешен.`, 'success');
-
-            autoCloseTimer = setTimeout(() => {
-                if (state === 'OPEN_LEFT' || state === 'OPEN_RIGHT') {
-                    state = 'IDLE';
-                    addLog('Тайм-аут ожидания (5 сек). Турникет закрыт.', 'info');
-                    updateUI();
-                }
-            }, 5000);
-        }
-
-        function cmdAntiPanic() {
-            clearTimeout(autoCloseTimer);
-            if (state !== 'PANIC') {
-                state = 'PANIC';
-                playTone(550, 'square', 0.3);
-                addLog('⚠️ АКТИВИРОВАНА АНТИПАНИКА! Электроника отключена.', 'warn');
-            } else {
-                state = 'IDLE';
-                playTone(450, 'sine', 0.2);
-                addLog('Режим АНТИПАНИКА сброшен. Возврат в штатный режим.', 'info');
-            }
-        }
-
-        function cmdForceLock() {
-            clearTimeout(autoCloseTimer);
-            if (state !== 'LOCKED') {
-                state = 'LOCKED';
-                playTone(200, 'sawtooth', 0.3);
-                addLog('🔒 ПРИНУДИТЕЛЬНАЯ БЛОКИРОВКА активирована с пульта.', 'danger');
-            } else {
-                state = 'IDLE';
-                playTone(450, 'sine', 0.15);
-                addLog('Блокировка снята.', 'info');
-            }
-        }
-
-        function simulateCard() {
-            if (state === 'LOCKED') {
-                playTone(150, 'sawtooth', 0.3);
-                addLog('Карта приложена: доступ отклонен (турникет заблокирован).', 'danger');
-                return;
-            }
-            addLog('RFID карта успешно считана.', 'success');
-            cmdUnlock('left');
-            updateUI();
-        }
-
-        function attemptPass(dir) {
-            if (state === 'PANIC' || state === 'FREE_LEFT' || state === 'FREE_RIGHT' || 
-               (dir === 'left' && state === 'OPEN_LEFT') || (dir === 'right' && state === 'OPEN_RIGHT')) {
-                
-                playTone(1100, 'sine', 0.1);
-                if (dir === 'left') { countLeft++; document.getElementById('countLeft').textContent = countLeft; }
-                else { countRight++; document.getElementById('countRight').textContent = countRight; }
-
-                addLog(`Успешный проход ${dir === 'left' ? 'влево' : 'вправо'}.`, 'success');
-
-                // Анимация в зависимости от модели
-                if (currentModel === 'ts2000') {
-                    const arm = document.getElementById('barrierArm');
-                    if (arm) { arm.classList.add(dir === 'left' ? 'spin-l' : 'spin-r'); setTimeout(()=>arm.classList.remove('spin-l','spin-r'), 500); }
-                } else if (currentModel === 'mars') {
-                    const container = document.getElementById('stageContainer');
-                    container.classList.add(dir === 'left' ? 'open-l' : 'open-r');
-                    setTimeout(()=>container.classList.remove('open-l','open-r'), 700);
-                } else if (currentModel === 'pb') {
-                    const pbArm = document.getElementById('pbArm');
-                    if(pbArm) { pbArm.style.transform = dir==='left'?'rotate(-75deg)':'rotate(75deg)'; setTimeout(()=>pbArm.style.transform='rotate(0deg)', 500); }
-                }
-
-                if (state === 'OPEN_LEFT' || state === 'OPEN_RIGHT') {
-                    state = 'IDLE';
-                    updateUI();
-                }
-            } else {
-                playTone(140, 'sawtooth', 0.3);
-                addLog(`ПОПЫТКА НЕСАНКЦИОНИРОВАННОГО ПРОХОДА (${dir}) заблокирована!`, 'danger');
-            }
-        }
-
-        function updateUI() {
-            const statusDot = document.getElementById('statusDot');
-            const statusText = document.getElementById('statusText');
-            const ledL = document.getElementById('ledLeft');
-            const ledR = document.getElementById('ledRight');
-            const stage = document.getElementById('stageContainer');
-
-            const btnL = document.getElementById('btnLeft');
-            const btnR = document.getElementById('btnRight');
-            const btnP = document.getElementById('btnPanic');
-            const btnK = document.getElementById('btnLock');
-
-            btnL.className = 'ctrl-btn'; btnR.className = 'ctrl-btn';
-            btnP.className = 'ctrl-btn span-2'; btnK.className = 'ctrl-btn span-2';
-
-            if (state === 'IDLE') {
-                statusDot.style.background = '#64748b'; statusText.textContent = 'ШТАТНЫЙ РЕЖИМ (ЗАКРЫТО)';
-                if(ledL) { ledL.className = 'led-panel led-red'; ledL.textContent = '✖'; }
-                if(ledR) { ledR.className = 'led-panel led-red'; ledR.textContent = '✖'; }
-            } else if (state === 'OPEN_LEFT' || state === 'FREE_LEFT') {
-                statusDot.style.background = '#22c55e'; 
-                statusText.textContent = state === 'FREE_LEFT' ? '🔓 БЕСПРЕПЯТСТВЕННЫЙ ДОСТУП ВЛЕВО (Штанга на месте)' : 'РАЗРЕШЕН ПРОХОД ВЛЕВО';
-                if(ledL) { ledL.className = 'led-panel led-green'; ledL.textContent = '⬅'; }
-                if(ledR) { ledR.className = 'led-panel led-red'; ledR.textContent = '✖'; }
-                btnL.classList.add('active-green');
-            } else if (state === 'OPEN_RIGHT' || state === 'FREE_RIGHT') {
-                statusDot.style.background = '#22c55e'; 
-                statusText.textContent = state === 'FREE_RIGHT' ? '🔓 БЕСПРЕПЯТСТВЕННЫЙ ДОСТУП ВПРАВО (Штанга на месте)' : 'РАЗРЕШЕН ПРОХОД ВПРАВО';
-                if(ledL) { ledL.className = 'led-panel led-red'; ledL.textContent = '✖'; }
-                if(ledR) { ledR.className = 'led-panel led-green'; ledR.textContent = '➡'; }
-                btnR.classList.add('active-green');
-            } else if (state === 'PANIC') {
-                statusDot.style.background = '#f59e0b'; statusText.textContent = 'ТРЕВОГА: АНТИПАНИКА';
-                if(ledL) { ledL.className = 'led-panel led-green'; ledL.textContent = '⬇'; }
-                if(ledR) { ledR.className = 'led-panel led-green'; ledR.textContent = '⬇'; }
-                btnP.classList.add('active-amber');
-            } else if (state === 'LOCKED') {
-                statusDot.style.background = '#ef4444'; statusText.textContent = 'ПРИНУДИТЕЛЬНАЯ БЛОКИРОВКА';
-                if(ledL) { ledL.className = 'led-panel led-red'; ledL.textContent = '⛔'; }
-                if(ledR) { ledR.className = 'led-panel led-red'; ledR.textContent = '⛔'; }
-                btnK.classList.add('active-red');
-            }
-        }
-
-        // Инициализация
-        renderModelHTML();
-        updateUI();
-        addLog('Симулятор турникетов ZKTeco успешно загружен.', 'info');
-    </script>
-</body>
-</html>
+        .barrier-arm-pro {
+            position: absolute; top: 10px; left: 50%; width: 12px
