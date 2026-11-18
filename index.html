@@ -1,177 +1,522 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Симулятор турникетов ZKTeco</title>
-    <style>
-        :root {
-            --zk-green: #00a859;
-            --zk-blue: #0072ce;
-            --bg-dark: #0f172a;
-            --panel-bg: #1e293b;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZKTeco Turnstile Simulator</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#0b1120;color:#eaf0fa;
+ font-family:Arial,sans-serif;
+}
+header{
+ padding:20px 24px;background:#111c30;
+ border-bottom:1px solid #293850;
+ display:flex;justify-content:space-between;align-items:center;
+ gap:12px;flex-wrap:wrap
+}
+.brand{font-size:22px;font-weight:bold;letter-spacing:1px}
+.brand span{color:#39a9ff}
+.sub{font-size:12px;color:#8293aa;margin-top:5px}
+main{max-width:1200px;margin:auto;padding:20px}
+.grid{display:grid;grid-template-columns:1.4fr 1fr;gap:18px}
+.panel{
+ background:#131f33;border:1px solid #283b56;
+ border-radius:15px;padding:19px;margin-bottom:18px
+}
+h2{font-size:17px;margin:0 0 17px}
+.status{
+ display:flex;align-items:center;gap:9px;
+ font-size:13px;color:#aabbd0
+}
+.dot{width:10px;height:10px;border-radius:50%;background:#34d399}
+.dot.red{background:#ef4444;box-shadow:0 0 12px #ef4444}
+.dot.orange{background:#f59e0b}
+.turnstile{
+ height:310px;position:relative;overflow:hidden;
+ background:linear-gradient(180deg,#192c43,#101a2c);
+ border-radius:12px;border:1px solid #31435a;
+ display:flex;align-items:center;justify-content:center
+}
+.floor{
+ position:absolute;bottom:35px;left:5%;width:90%;height:2px;
+ background:#50647e
+}
+.gate{
+ position:relative;width:170px;height:125px;
+ margin-top:50px;
+}
+.base{
+ position:absolute;bottom:0;left:0;width:170px;height:55px;
+ background:linear-gradient(180deg,#b9c6d3,#53657a);
+ border:2px solid #d3deea;border-radius:12px 12px 5px 5px;
+ box-shadow:0 13px 25px #0008
+}
+.top{
+ position:absolute;bottom:45px;left:10px;width:150px;height:25px;
+ border-radius:7px;
+ background:linear-gradient(180deg,#e6edf4,#8296ab);
+ border:2px solid #e1e9f1
+}
+.hub{
+ position:absolute;bottom:52px;left:65px;width:40px;height:40px;
+ border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#77899e 50%,#27384e);
+ border:3px solid #e1e9f1;z-index:3
+}
+.arms{
+ position:absolute;bottom:71px;left:85px;
+ width:0;height:0;z-index:2;
+ transform:rotate(0deg);
+ transition:transform .45s ease;
+}
+.arm{
+ position:absolute;width:92px;height:9px;
+ left:0;top:-4px;border-radius:8px;
+ background:linear-gradient(180deg,#f8fafc,#8496aa);
+ transform-origin:0 50%;
+ box-shadow:0 2px 4px #0008
+}
+.arm:nth-child(2){transform:rotate(120deg)}
+.arm:nth-child(3){transform:rotate(240deg)}
+.arms.dropped{
+ transform:rotate(0deg) scaleY(.12);
+ opacity:.5
+}
+.arms.moving{filter:drop-shadow(0 0 5px #38bdf8)}
+.lamp{
+ position:absolute;bottom:100px;left:75px;
+ width:20px;height:8px;border-radius:4px;
+ background:#22c55e;box-shadow:0 0 12px #22c55e
+}
+.lamp.red{background:#ef4444;box-shadow:0 0 12px #ef4444}
+.lamp.orange{background:#f59e0b;box-shadow:0 0 12px #f59e0b}
+.arrow{
+ position:absolute;top:25px;font-size:28px;font-weight:bold;
+ color:#45b7ff
+}
+.arrow.left{left:22%}
+.arrow.right{right:22%}
+.floor-label{
+ position:absolute;bottom:10px;color:#8498b2;font-size:11px;
+ letter-spacing:2px
+}
+.message{
+ margin-top:13px;padding:13px;border-radius:9px;
+ background:#0d192a;color:#b9cce2;font-size:13px;
+ min-height:43px
+}
+.buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button,select{
+ border:0;border-radius:9px;padding:13px 10px;
+ font-weight:bold;font-size:13px;cursor:pointer;
+ transition:.15s
+}
+button:hover{filter:brightness(1.15)}
+button:active{transform:scale(.98)}
+button:disabled{opacity:.35;cursor:not-allowed}
+.blue{background:#1677d2;color:white}
+.green{background:#16865d;color:white}
+.redbtn{background:#b83240;color:white}
+.orangebtn{background:#b66b18;color:white}
+.gray{background:#34465e;color:#e5edf7}
+button.active{outline:2px solid white;outline-offset:2px}
+select{
+ width:100%;background:#263850;color:white;
+ border:1px solid #455c78;margin-top:8px
+}
+.mode-option{
+ padding:12px;background:#0e1a2b;border:1px solid #293d57;
+ border-radius:9px;margin-bottom:9px;cursor:pointer
+}
+.mode-option.selected{border-color:#38a8ff;background:#122b45}
+.mode-option strong{font-size:13px}
+.mode-option p{font-size:11px;color:#92a6bf;margin:5px 0 0}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.stat{padding:13px;background:#0d192a;border-radius:9px}
+.stat small{display:block;color:#8fa2bb;font-size:11px}
+.stat strong{display:block;font-size:23px;margin-top:7px}
+.log{
+ max-height:210px;overflow:auto;font-size:12px;
+ color:#a8bad0
+}
+.log div{padding:9px 0;border-bottom:1px solid #26384f}
+.log time{color:#647e9e;margin-right:9px}
+.note{font-size:11px;color:#7489a4;line-height:1.5}
+.alarm{
+ display:none;padding:13px;background:#481e29;
+ border:1px solid #d04455;color:#ffb7c0;
+ border-radius:9px;margin-bottom:13px;font-weight:bold
+}
+.alarm.show{display:block}
+footer{text-align:center;padding:20px;color:#637994;font-size:11px}
+@media(max-width:750px){
+ .grid{grid-template-columns:1fr}
+ main{padding:12px}
+ header{padding:15px}
+ .brand{font-size:18px}
+}
+</style>
+</head>
+<body>
+<header>
+ <div>
+  <div class="brand"><span>ZK</span>TECO | TURNSTILE</div>
+  <div class="sub">TRIPOD TURNSTILE SIMULATOR · OPERATOR PANEL</div>
+ </div>
+ <div class="status">
+  <span class="dot" id="statusDot"></span>
+  <span id="statusText">СИСТЕМА ГОТОВА</span>
+ </div>
+</header>
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            user-select: none;
-        }
+<main>
+<div class="grid">
+<div>
+ <section class="panel">
+  <h2>Визуализация турникета</h2>
+  <div class="turnstile">
+   <div class="arrow left">←</div>
+   <div class="arrow right">→</div>
+   <div class="gate">
+    <div class="arms" id="arms">
+     <div class="arm"></div>
+     <div class="arm"></div>
+     <div class="arm"></div>
+    </div>
+    <div class="hub"></div>
+    <div class="lamp" id="lamp"></div>
+    <div class="top"></div>
+    <div class="base"></div>
+   </div>
+   <div class="floor"></div>
+   <div class="floor-label">ZKTECO TRIPOD GATE</div>
+  </div>
+  <div class="message" id="message">
+   Турникет находится в режиме ожидания.
+  </div>
+ </section>
 
-        body {
-            background-color: var(--bg-dark);
-            color: #f8fafc;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-        }
+ <section class="panel">
+  <h2>Управление проходом</h2>
+  <div class="buttons">
+   <button class="blue" id="leftBtn" onclick="pass('left')">
+    ← ОДИН ПРОХОД ВЛЕВО
+   </button>
+   <button class="blue" id="rightBtn" onclick="pass('right')">
+    ОДИН ПРОХОД ВПРАВО →
+   </button>
+  </div>
+  <p class="note">В обычном режиме каждое нажатие разрешает только один проход в выбранном направлении.</p>
+  <div class="buttons">
+   <button class="green" onclick="setMode('free')">∞ СВОБОДНЫЙ ПРОХОД</button>
+   <button class="gray" onclick="setMode('normal')">ОБЫЧНЫЙ РЕЖИМ</button>
+  </div>
+ </section>
 
-        header {
-            text-align: center;
-            margin-bottom: 18px;
-        }
+ <section class="panel">
+  <h2>Антипаника</h2>
+  <div class="buttons">
+   <button class="orangebtn" onclick="panic()">⚠ ВКЛЮЧИТЬ АНТИПАНИКУ</button>
+   <button class="gray" onclick="disablePanic()">ВОССТАНОВИТЬ ШТАНГУ</button>
+  </div>
+  <label style="display:block;margin-top:16px;font-size:12px;color:#a8bad0">
+   Направление свободного прохода:
+  </label>
+  <select id="panicDirection">
+   <option value="both">В обе стороны</option>
+   <option value="left">Только влево</option>
+   <option value="right">Только вправо</option>
+  </select>
+  <p class="note">При активации антипаники штанга опускается. Направление прохода определяется выбранной настройкой.</p>
+ </section>
+</div>
 
-        header h1 {
-            font-size: 1.4rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
+<div>
+ <section class="panel">
+  <h2>Режим работы</h2>
+  <div class="mode-option selected" id="normalOption" onclick="setMode('normal')">
+   <strong>01 · Нормальный режим</strong>
+   <p>Разовый проход влево или вправо.</p>
+  </div>
+  <div class="mode-option" id="freeOption" onclick="setMode('free')">
+   <strong>02 · Свободный проход</strong>
+   <p>Неограниченное движение в обе стороны без карт.</p>
+  </div>
+  <div class="mode-option" id="panicOption" onclick="setMode('panic')">
+   <strong>03 · Антипаника</strong>
+   <p>Штанга опущена, проход по заданному направлению.</p>
+  </div>
+ </section>
 
-        .zk-badge {
-            background: var(--zk-green);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-weight: 800;
-        }
+ <section class="panel">
+  <h2>Принудительное воздействие</h2>
+  <button class="redbtn" style="width:100%" onclick="forceEntry()">
+   🚨 ИМИТАЦИЯ ПРИНУДИТЕЛЬНОГО ПРОХОДА
+  </button>
+  <div style="height:10px"></div>
+  <div class="alarm" id="alarm">
+   🚨 ТРЕВОГА! ПРИНУДИТЕЛЬНЫЙ ПРОХОД ОБНАРУЖЕН!
+  </div>
+  <button class="gray" style="width:100%" onclick="resetAlarm()">
+   СБРОСИТЬ ТРЕВОГУ / РАЗБЛОКИРОВАТЬ
+  </button>
+  <p class="note">При имитации принудительного прохода турникет блокирует штатные команды. Для восстановления требуется сброс тревоги оператором.</p>
+ </section>
 
-        .subtitle {
-            color: #94a3b8;
-            font-size: 0.85rem;
-            margin-top: 5px;
-        }
+ <section class="panel">
+  <h2>Состояние системы</h2>
+  <div class="stats">
+   <div class="stat">
+    <small>Всего проходов</small>
+    <strong id="total">0</strong>
+   </div>
+   <div class="stat">
+    <small>Влево</small>
+    <strong id="leftCount">0</strong>
+   </div>
+   <div class="stat">
+    <small>Вправо</small>
+    <strong id="rightCount">0</strong>
+   </div>
+  </div>
+  <div style="margin-top:17px;font-size:12px;color:#9eb1c9;line-height:2">
+   Режим: <strong id="currentMode">Обычный</strong><br>
+   Штанга: <strong id="barState">Поднята / рабочее положение</strong><br>
+   Блокировка: <strong id="lockState">Нет</strong><br>
+   Направление: <strong id="directionState">Оба направления по команде</strong>
+  </div>
+ </section>
 
-        /* Выбор модели турникета */
-        .model-selector {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
-            background: #1e293b;
-            padding: 6px;
-            border-radius: 12px;
-            border: 1px solid #334155;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
+ <section class="panel">
+  <h2>Журнал событий</h2>
+  <div class="log" id="log">
+   <div>Система запущена. Ожидание команд.</div>
+  </div>
+  <button class="gray" style="width:100%;margin-top:12px" onclick="clearLog()">
+   ОЧИСТИТЬ ЖУРНАЛ
+  </button>
+ </section>
+</div>
+</div>
+</main>
+<footer>
+ZKTeco Turnstile Simulator · Учебная программная модель · Не подключена к реальному оборудованию
+</footer>
 
-        .model-tab {
-            background: transparent;
-            border: none;
-            color: #94a3b8;
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.85rem;
-            transition: all 0.2s;
-        }
+<script>
+let mode = "normal";
+let locked = false;
+let alarmActive = false;
+let panicActive = false;
+let total = 0;
+let leftCount = 0;
+let rightCount = 0;
+let busy = false;
+let panicDirection = "both";
 
-        .model-tab.active {
-            background: var(--zk-blue);
-            color: #fff;
-            box-shadow: 0 4px 12px rgba(0, 114, 206, 0.4);
-        }
+const $ = id => document.getElementById(id);
 
-        /* Рабочая зона */
-        .workspace {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 25px;
-            justify-content: center;
-            align-items: flex-start;
-            max-width: 1050px;
-            width: 100%;
-        }
+function log(text){
+ const row = document.createElement("div");
+ const time = new Date().toLocaleTimeString("ru-RU");
+ const stamp = document.createElement("time");
+ stamp.textContent = time;
+ row.appendChild(stamp);
+ row.appendChild(document.createTextNode(text));
+ $("log").prepend(row);
+}
 
-        /* Сцена турникета */
-        .turnstile-stage {
-            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
-            border: 1px solid #334155;
-            border-radius: 16px;
-            padding: 25px;
-            flex: 1 1 480px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-            min-height: 360px;
-        }
+function message(text){ $("message").textContent = text; }
 
-        .status-banner {
-            background: #0f172a;
-            border: 1px solid #334155;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 0.85rem;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            text-align: center;
-        }
+function update(){
+ const names = {
+  normal:"Обычный",
+  free:"Свободный проход",
+  panic:"Антипаника"
+ };
+ $("currentMode").textContent = names[mode];
+ $("total").textContent = total;
+ $("leftCount").textContent = leftCount;
+ $("rightCount").textContent = rightCount;
 
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #64748b;
-        }
+ $("barState").textContent =
+  panicActive ? "Опущена (антипаника)" : "Поднята / рабочее положение";
 
-        .turnstile-scene {
-            position: relative;
-            width: 100%;
-            height: 210px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+ $("lockState").textContent = locked ? "ЗАБЛОКИРОВАН" : "Нет";
 
-        /* --- МОДЕЛЬ 1: ZKTeco TS2000 Pro (Трипод) --- */
-        .cabinet-pro {
-            position: relative;
-            width: 260px;
-            height: 85px;
-            background: linear-gradient(180deg, #e2e8f0 0%, #94a3b8 50%, #64748b 100%);
-            border-radius: 40px;
-            border: 2px solid #475569;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 16px;
-            box-shadow: 0 12px 22px rgba(0,0,0,0.6);
-        }
-        .glass-top {
-            position: absolute;
-            top: 4px; left: 45px; right: 45px; height: 73px;
-            background: #0f172a;
-            border-radius: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 15px;
-            border: 1px solid #334155;
-        }
-        .tripod-hub-pro {
-            position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%);
-            width: 30px; height: 20px; background: #334155; border-radius: 0 0 6px 6px;
-        }
-        .barrier-arm-pro {
-            position: absolute; top: 10px; left: 50%; width: 12px
+ $("directionState").textContent =
+  panicActive ? directionName(panicDirection) :
+  mode === "free" ? "Свободно в обе стороны" :
+  "Оба направления по команде";
+
+ $("statusDot").className = "dot" +
+  (locked ? " red" : panicActive ? " orange" : "");
+
+ $("statusText").textContent = locked ? "ТРЕВОГА / БЛОКИРОВКА" :
+  panicActive ? "АНТИПАНИКА АКТИВНА" :
+  mode === "free" ? "СВОБОДНЫЙ ПРОХОД" : "СИСТЕМА ГОТОВА";
+
+ $("lamp").className = "lamp" +
+  (locked ? " red" : panicActive ? " orange" : "");
+
+ $("normalOption").classList.toggle("selected",mode==="normal");
+ $("freeOption").classList.toggle("selected",mode==="free");
+ $("panicOption").classList.toggle("selected",mode==="panic");
+
+ $("arms").classList.toggle("dropped",panicActive);
+
+ $("leftBtn").disabled = locked || busy ||
+  (panicActive && panicDirection==="right");
+ $("rightBtn").disabled = locked || busy ||
+  (panicActive && panicDirection==="left");
+}
+
+function directionName(d){
+ return d==="both" ? "Оба направления" :
+ d==="left" ? "Только влево" : "Только вправо";
+}
+
+function setMode(next){
+ if(locked){message("Сначала сбросьте блокировку.");return;}
+ if(panicActive && next!=="panic"){
+  disablePanic();
+ }
+ mode=next;
+ if(next==="normal"){
+  panicActive=false;
+  message("Обычный режим. Доступен разовый проход.");
+ }
+ if(next==="free"){
+  panicActive=false;
+  message("Свободный режим. Проход разрешён в обе стороны без ограничений.");
+ }
+ if(next==="panic"){
+  panic();
+  return;
+ }
+ log("Установлен режим: "+({
+  normal:"Обычный",free:"Свободный"
+ }[next]));
+ update();
+}
+
+function pass(direction){
+ if(locked || busy) return;
+
+ if(panicActive){
+  if(panicDirection!=="both" && panicDirection!==direction){
+   message("Это направление закрыто настройками антипаники.");
+   log("Отказ: запрещённое направление.");
+   return;
+  }
+ }else if(mode!=="normal" && mode!=="free"){
+  return;
+ }
+
+ busy=true;
+ update();
+
+ const directionText=direction==="left"?"влево":"вправо";
+ message("Проход разрешён: движение "+directionText+".");
+
+ $("arms").classList.add("moving");
+ $("arms").style.transform =
+  "rotate("+(direction==="left" ? -120 : 120)+"deg)";
+
+ log("Разрешён проход "+directionText+".");
+
+ setTimeout(()=>{
+  if(direction==="left") leftCount++;
+  else rightCount++;
+  total++;
+
+  $("arms").style.transform="rotate(0deg)";
+  $("arms").classList.remove("moving");
+  busy=false;
+
+  if(mode==="normal" && !panicActive){
+   message("Проход завершён. Турникет снова заблокирован до следующей команды.");
+  }else if(panicActive){
+   message("Проход завершён. Антипаника активна, проход остаётся свободным.");
+  }else{
+   message("Проход завершён. Свободный режим продолжается.");
+  }
+  update();
+ },650);
+}
+
+function panic(){
+ if(locked){
+  message("Нельзя включить антипанику при активной блокировке. Сначала сбросьте тревогу.");
+  return;
+ }
+ panicActive=true;
+ mode="panic";
+ panicDirection=$("panicDirection").value;
+ message("АНТИПАНИКА АКТИВНА. Штанга опущена. "+directionName(panicDirection)+".");
+ log("ВКЛЮЧЕНА АНТИПАНИКА. Штанга опущена. "+directionName(panicDirection));
+ update();
+}
+
+function disablePanic(){
+ if(locked){
+  message("Сначала сбросьте тревогу.");
+  return;
+ }
+ panicActive=false;
+ if(mode==="panic") mode="normal";
+ $("arms").style.transform="rotate(0deg)";
+ message("Антипаника отключена. Штанга возвращена в рабочее положение.");
+ log("Антипаника отключена. Штанга восстановлена.");
+ update();
+}
+
+$("panicDirection").addEventListener("change",()=>{
+ panicDirection=$("panicDirection").value;
+ if(panicActive){
+  message("Настройка антипаники: "+directionName(panicDirection));
+  log("Изменено направление антипаники: "+directionName(panicDirection));
+  update();
+ }
+});
+
+function forceEntry(){
+ if(locked)return;
+ locked=true;
+ alarmActive=true;
+ panicActive=false;
+ mode="normal";
+ busy=false;
+
+ $("arms").style.transform="rotate(0deg)";
+ $("alarm").classList.add("show");
+ message("ТРЕВОГА! Обнаружена попытка принудительного прохода. Команды прохода заблокированы.");
+ log("ТРЕВОГА: принудительный проход! Активирована блокировка.");
+ update();
+}
+
+function resetAlarm(){
+ if(!locked){
+  message("Активной тревоги нет.");
+  return;
+ }
+ locked=false;
+ alarmActive=false;
+ panicActive=false;
+ mode="normal";
+ $("alarm").classList.remove("show");
+ $("arms").style.transform="rotate(0deg)";
+ message("Тревога сброшена оператором. Турникет восстановлен.");
+ log("Тревога сброшена. Блокировка снята.");
+ update();
+}
+
+function clearLog(){
+ $("log").innerHTML="<div>Журнал очищен.</div>";
+}
+
+update();
+</script>
+</body>
+</html>
