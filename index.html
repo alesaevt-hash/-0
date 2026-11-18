@@ -2,520 +2,358 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ZKTeco Turnstile Simulator</title>
 <style>
 *{box-sizing:border-box}
-body{
- margin:0;background:#0b1120;color:#eaf0fa;
- font-family:Arial,sans-serif;
+body{margin:0;background:#0b1220;color:#edf4ff;font-family:Arial}
+header{padding:20px;background:#111e32;border-bottom:1px solid #30435c}
+header b{font-size:22px;color:#42aaff}
+header small{display:block;color:#8fa5bf;margin-top:6px}
+main{max-width:1150px;margin:auto;padding:18px}
+.panel{background:#142238;border:1px solid #2c405c;border-radius:13px;padding:17px;margin-bottom:16px}
+h2{font-size:17px;margin:0 0 15px}
+.layout{display:grid;grid-template-columns:1.3fr 1fr;gap:15px}
+select,button{width:100%;padding:13px;border:0;border-radius:8px;font-weight:bold;font-size:13px}
+select{background:#263b56;color:white;border:1px solid #536a87}
+button{cursor:pointer;color:white;background:#236eb5;margin:4px 0}
+button:hover{filter:brightness(1.2)}
+.green{background:#13865c}.red{background:#b83243}
+.orange{background:#ad6c19}.gray{background:#40536c}
+.buttons{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.scene{
+ background:linear-gradient(#192e47,#102037);
+ border:1px solid #3a526e;border-radius:12px;
+ padding:10px;min-height:290px;
+ display:flex;align-items:center;justify-content:center;
+ overflow:hidden;position:relative
 }
-header{
- padding:20px 24px;background:#111c30;
- border-bottom:1px solid #293850;
- display:flex;justify-content:space-between;align-items:center;
- gap:12px;flex-wrap:wrap
-}
-.brand{font-size:22px;font-weight:bold;letter-spacing:1px}
-.brand span{color:#39a9ff}
-.sub{font-size:12px;color:#8293aa;margin-top:5px}
-main{max-width:1200px;margin:auto;padding:20px}
-.grid{display:grid;grid-template-columns:1.4fr 1fr;gap:18px}
-.panel{
- background:#131f33;border:1px solid #283b56;
- border-radius:15px;padding:19px;margin-bottom:18px
-}
-h2{font-size:17px;margin:0 0 17px}
-.status{
- display:flex;align-items:center;gap:9px;
- font-size:13px;color:#aabbd0
-}
-.dot{width:10px;height:10px;border-radius:50%;background:#34d399}
-.dot.red{background:#ef4444;box-shadow:0 0 12px #ef4444}
+.scene svg{width:100%;max-height:270px}
+.scene-label{position:absolute;bottom:9px;left:12px;color:#7f9bb9;font-size:10px;letter-spacing:2px}
+.info{background:#0d1a2c;padding:12px;border-radius:8px;font-size:13px;line-height:1.8;margin-top:12px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.stat{background:#0d1a2c;padding:12px;border-radius:8px}
+.stat small{color:#8ba2be;font-size:11px}
+.stat b{display:block;font-size:23px;margin-top:7px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#22c55e;margin-right:7px}
+.dot.red{background:#ef4444}
 .dot.orange{background:#f59e0b}
-.turnstile{
- height:310px;position:relative;overflow:hidden;
- background:linear-gradient(180deg,#192c43,#101a2c);
- border-radius:12px;border:1px solid #31435a;
- display:flex;align-items:center;justify-content:center
-}
-.floor{
- position:absolute;bottom:35px;left:5%;width:90%;height:2px;
- background:#50647e
-}
-.gate{
- position:relative;width:170px;height:125px;
- margin-top:50px;
-}
-.base{
- position:absolute;bottom:0;left:0;width:170px;height:55px;
- background:linear-gradient(180deg,#b9c6d3,#53657a);
- border:2px solid #d3deea;border-radius:12px 12px 5px 5px;
- box-shadow:0 13px 25px #0008
-}
-.top{
- position:absolute;bottom:45px;left:10px;width:150px;height:25px;
- border-radius:7px;
- background:linear-gradient(180deg,#e6edf4,#8296ab);
- border:2px solid #e1e9f1
-}
-.hub{
- position:absolute;bottom:52px;left:65px;width:40px;height:40px;
- border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#77899e 50%,#27384e);
- border:3px solid #e1e9f1;z-index:3
-}
-.arms{
- position:absolute;bottom:71px;left:85px;
- width:0;height:0;z-index:2;
- transform:rotate(0deg);
- transition:transform .45s ease;
-}
-.arm{
- position:absolute;width:92px;height:9px;
- left:0;top:-4px;border-radius:8px;
- background:linear-gradient(180deg,#f8fafc,#8496aa);
- transform-origin:0 50%;
- box-shadow:0 2px 4px #0008
-}
-.arm:nth-child(2){transform:rotate(120deg)}
-.arm:nth-child(3){transform:rotate(240deg)}
-.arms.dropped{
- transform:rotate(0deg) scaleY(.12);
- opacity:.5
-}
-.arms.moving{filter:drop-shadow(0 0 5px #38bdf8)}
-.lamp{
- position:absolute;bottom:100px;left:75px;
- width:20px;height:8px;border-radius:4px;
- background:#22c55e;box-shadow:0 0 12px #22c55e
-}
-.lamp.red{background:#ef4444;box-shadow:0 0 12px #ef4444}
-.lamp.orange{background:#f59e0b;box-shadow:0 0 12px #f59e0b}
-.arrow{
- position:absolute;top:25px;font-size:28px;font-weight:bold;
- color:#45b7ff
-}
-.arrow.left{left:22%}
-.arrow.right{right:22%}
-.floor-label{
- position:absolute;bottom:10px;color:#8498b2;font-size:11px;
- letter-spacing:2px
-}
-.message{
- margin-top:13px;padding:13px;border-radius:9px;
- background:#0d192a;color:#b9cce2;font-size:13px;
- min-height:43px
-}
-.buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-button,select{
- border:0;border-radius:9px;padding:13px 10px;
- font-weight:bold;font-size:13px;cursor:pointer;
- transition:.15s
-}
-button:hover{filter:brightness(1.15)}
-button:active{transform:scale(.98)}
-button:disabled{opacity:.35;cursor:not-allowed}
-.blue{background:#1677d2;color:white}
-.green{background:#16865d;color:white}
-.redbtn{background:#b83240;color:white}
-.orangebtn{background:#b66b18;color:white}
-.gray{background:#34465e;color:#e5edf7}
-button.active{outline:2px solid white;outline-offset:2px}
-select{
- width:100%;background:#263850;color:white;
- border:1px solid #455c78;margin-top:8px
-}
-.mode-option{
- padding:12px;background:#0e1a2b;border:1px solid #293d57;
- border-radius:9px;margin-bottom:9px;cursor:pointer
-}
-.mode-option.selected{border-color:#38a8ff;background:#122b45}
-.mode-option strong{font-size:13px}
-.mode-option p{font-size:11px;color:#92a6bf;margin:5px 0 0}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
-.stat{padding:13px;background:#0d192a;border-radius:9px}
-.stat small{display:block;color:#8fa2bb;font-size:11px}
-.stat strong{display:block;font-size:23px;margin-top:7px}
-.log{
- max-height:210px;overflow:auto;font-size:12px;
- color:#a8bad0
-}
-.log div{padding:9px 0;border-bottom:1px solid #26384f}
-.log time{color:#647e9e;margin-right:9px}
-.note{font-size:11px;color:#7489a4;line-height:1.5}
-.alarm{
- display:none;padding:13px;background:#481e29;
- border:1px solid #d04455;color:#ffb7c0;
- border-radius:9px;margin-bottom:13px;font-weight:bold
-}
+.log{max-height:180px;overflow:auto;font-size:12px;color:#b5c8dd}
+.log div{padding:8px 0;border-bottom:1px solid #263a53}
+.alarm{display:none;background:#651e2b;color:#ffc1c8;padding:12px;border-radius:8px;margin:10px 0}
 .alarm.show{display:block}
-footer{text-align:center;padding:20px;color:#637994;font-size:11px}
-@media(max-width:750px){
- .grid{grid-template-columns:1fr}
- main{padding:12px}
- header{padding:15px}
- .brand{font-size:18px}
-}
+.note{font-size:11px;color:#849ab5;line-height:1.5}
+@media(max-width:750px){.layout{grid-template-columns:1fr}main{padding:10px}}
 </style>
 </head>
 <body>
 <header>
- <div>
-  <div class="brand"><span>ZK</span>TECO | TURNSTILE</div>
-  <div class="sub">TRIPOD TURNSTILE SIMULATOR · OPERATOR PANEL</div>
- </div>
- <div class="status">
-  <span class="dot" id="statusDot"></span>
-  <span id="statusText">СИСТЕМА ГОТОВА</span>
- </div>
+ <b>ZKTeco | TURNSTILE SIMULATOR</b>
+ <small>Симулятор турникетов · Боковая проекция · Панель оператора</small>
 </header>
-
 <main>
-<div class="grid">
+<div class="layout">
 <div>
- <section class="panel">
-  <h2>Визуализация турникета</h2>
-  <div class="turnstile">
-   <div class="arrow left">←</div>
-   <div class="arrow right">→</div>
-   <div class="gate">
-    <div class="arms" id="arms">
-     <div class="arm"></div>
-     <div class="arm"></div>
-     <div class="arm"></div>
-    </div>
-    <div class="hub"></div>
-    <div class="lamp" id="lamp"></div>
-    <div class="top"></div>
-    <div class="base"></div>
-   </div>
-   <div class="floor"></div>
-   <div class="floor-label">ZKTECO TRIPOD GATE</div>
-  </div>
-  <div class="message" id="message">
-   Турникет находится в режиме ожидания.
-  </div>
- </section>
+<section class="panel">
+<h2>Выбор модели турникета</h2>
+<select id="model" onchange="changeModel()">
+<option value="TS1000">ZKTeco TS1000</option>
+<option value="TS2000">ZKTeco TS2000</option>
+<option value="TS2200">ZKTeco TS2200</option>
+<option value="SBTL5000">ZKTeco SBTL5000</option>
+<option value="FBL6000">ZKTeco FBL6000</option>
+</select>
+</section>
 
- <section class="panel">
-  <h2>Управление проходом</h2>
-  <div class="buttons">
-   <button class="blue" id="leftBtn" onclick="pass('left')">
-    ← ОДИН ПРОХОД ВЛЕВО
-   </button>
-   <button class="blue" id="rightBtn" onclick="pass('right')">
-    ОДИН ПРОХОД ВПРАВО →
-   </button>
-  </div>
-  <p class="note">В обычном режиме каждое нажатие разрешает только один проход в выбранном направлении.</p>
-  <div class="buttons">
-   <button class="green" onclick="setMode('free')">∞ СВОБОДНЫЙ ПРОХОД</button>
-   <button class="gray" onclick="setMode('normal')">ОБЫЧНЫЙ РЕЖИМ</button>
-  </div>
- </section>
+<section class="panel">
+<h2>Внешний вид — вид сбоку</h2>
+<div class="scene">
+ <svg id="drawing" viewBox="0 0 650 280"></svg>
+ <div class="scene-label">SIDE VIEW · БОКОВАЯ ПРОЕКЦИЯ</div>
+</div>
+<div class="info" id="description">TS1000 · Трёхштанговый турникет</div>
+</section>
 
- <section class="panel">
-  <h2>Антипаника</h2>
-  <div class="buttons">
-   <button class="orangebtn" onclick="panic()">⚠ ВКЛЮЧИТЬ АНТИПАНИКУ</button>
-   <button class="gray" onclick="disablePanic()">ВОССТАНОВИТЬ ШТАНГУ</button>
-  </div>
-  <label style="display:block;margin-top:16px;font-size:12px;color:#a8bad0">
-   Направление свободного прохода:
-  </label>
-  <select id="panicDirection">
-   <option value="both">В обе стороны</option>
-   <option value="left">Только влево</option>
-   <option value="right">Только вправо</option>
-  </select>
-  <p class="note">При активации антипаники штанга опускается. Направление прохода определяется выбранной настройкой.</p>
- </section>
+<section class="panel">
+<h2>Управление проходом</h2>
+<div class="buttons">
+<button onclick="pass('left')">← ОДИН ПРОХОД ВЛЕВО</button>
+<button onclick="pass('right')">ОДИН ПРОХОД ВПРАВО →</button>
+<button class="green" onclick="setMode('free')">∞ СВОБОДНЫЙ ПРОХОД</button>
+<button class="gray" onclick="setMode('normal')">ОБЫЧНЫЙ РЕЖИМ</button>
+</div>
+</section>
+
+<section class="panel">
+<h2>Антипаника</h2>
+<label class="note">Направление прохода</label>
+<select id="panicDirection">
+<option value="both">В обе стороны</option>
+<option value="left">Только влево</option>
+<option value="right">Только вправо</option>
+</select>
+<div class="buttons" style="margin-top:10px">
+<button class="orange" onclick="panic()">ВКЛЮЧИТЬ АНТИПАНИКУ</button>
+<button class="gray" onclick="restore()">ВОССТАНОВИТЬ МЕХАНИЗМ</button>
+</div>
+</section>
 </div>
 
 <div>
- <section class="panel">
-  <h2>Режим работы</h2>
-  <div class="mode-option selected" id="normalOption" onclick="setMode('normal')">
-   <strong>01 · Нормальный режим</strong>
-   <p>Разовый проход влево или вправо.</p>
-  </div>
-  <div class="mode-option" id="freeOption" onclick="setMode('free')">
-   <strong>02 · Свободный проход</strong>
-   <p>Неограниченное движение в обе стороны без карт.</p>
-  </div>
-  <div class="mode-option" id="panicOption" onclick="setMode('panic')">
-   <strong>03 · Антипаника</strong>
-   <p>Штанга опущена, проход по заданному направлению.</p>
-  </div>
- </section>
+<section class="panel">
+<h2>Состояние системы</h2>
+<div><span class="dot" id="dot"></span><span id="status">Система готова</span></div>
+<div class="info">
+Режим: <b id="modeText">Обычный</b><br>
+Механизм: <b id="mechanism">Заблокирован</b><br>
+Антипаника: <b id="panicText">Выключена</b><br>
+Блокировка: <b id="lockText">Нет</b><br>
+Направление: <b id="directionText">По команде</b>
+</div>
+</section>
 
- <section class="panel">
-  <h2>Принудительное воздействие</h2>
-  <button class="redbtn" style="width:100%" onclick="forceEntry()">
-   🚨 ИМИТАЦИЯ ПРИНУДИТЕЛЬНОГО ПРОХОДА
-  </button>
-  <div style="height:10px"></div>
-  <div class="alarm" id="alarm">
-   🚨 ТРЕВОГА! ПРИНУДИТЕЛЬНЫЙ ПРОХОД ОБНАРУЖЕН!
-  </div>
-  <button class="gray" style="width:100%" onclick="resetAlarm()">
-   СБРОСИТЬ ТРЕВОГУ / РАЗБЛОКИРОВАТЬ
-  </button>
-  <p class="note">При имитации принудительного прохода турникет блокирует штатные команды. Для восстановления требуется сброс тревоги оператором.</p>
- </section>
+<section class="panel">
+<h2>Принудительное воздействие</h2>
+<button class="red" onclick="force()">🚨 ИМИТИРОВАТЬ ПРИНУДИТЕЛЬНЫЙ ПРОХОД</button>
+<div class="alarm" id="alarm">🚨 ТРЕВОГА! ПРИНУДИТЕЛЬНЫЙ ПРОХОД!</div>
+<button class="gray" onclick="resetAlarm()">СБРОСИТЬ ТРЕВОГУ</button>
+<p class="note">При тревоге все штатные команды блокируются до сброса оператором.</p>
+</section>
 
- <section class="panel">
-  <h2>Состояние системы</h2>
-  <div class="stats">
-   <div class="stat">
-    <small>Всего проходов</small>
-    <strong id="total">0</strong>
-   </div>
-   <div class="stat">
-    <small>Влево</small>
-    <strong id="leftCount">0</strong>
-   </div>
-   <div class="stat">
-    <small>Вправо</small>
-    <strong id="rightCount">0</strong>
-   </div>
-  </div>
-  <div style="margin-top:17px;font-size:12px;color:#9eb1c9;line-height:2">
-   Режим: <strong id="currentMode">Обычный</strong><br>
-   Штанга: <strong id="barState">Поднята / рабочее положение</strong><br>
-   Блокировка: <strong id="lockState">Нет</strong><br>
-   Направление: <strong id="directionState">Оба направления по команде</strong>
-  </div>
- </section>
+<section class="panel">
+<h2>Статистика проходов</h2>
+<div class="stats">
+<div class="stat"><small>Всего</small><b id="total">0</b></div>
+<div class="stat"><small>Влево</small><b id="left">0</b></div>
+<div class="stat"><small>Вправо</small><b id="right">0</b></div>
+</div>
+</section>
 
- <section class="panel">
-  <h2>Журнал событий</h2>
-  <div class="log" id="log">
-   <div>Система запущена. Ожидание команд.</div>
-  </div>
-  <button class="gray" style="width:100%;margin-top:12px" onclick="clearLog()">
-   ОЧИСТИТЬ ЖУРНАЛ
-  </button>
- </section>
+<section class="panel">
+<h2>Журнал событий</h2>
+<div class="log" id="log">Система запущена.</div>
+<button class="gray" onclick="clearLog()">ОЧИСТИТЬ ЖУРНАЛ</button>
+</section>
 </div>
 </div>
+<p class="note">Учебный программный симулятор. Внешний вид является схематической визуализацией, а не точной заводской CAD-моделью. Не управляет реальным оборудованием.</p>
 </main>
-<footer>
-ZKTeco Turnstile Simulator · Учебная программная модель · Не подключена к реальному оборудованию
-</footer>
 
 <script>
-let mode = "normal";
-let locked = false;
-let alarmActive = false;
-let panicActive = false;
-let total = 0;
-let leftCount = 0;
-let rightCount = 0;
-let busy = false;
-let panicDirection = "both";
+const models={
+TS1000:{
+ name:"ZKTeco TS1000",
+ desc:"Классический трипод с тремя поворотными штангами и компактным корпусом.",
+ type:"tripod",width:310,height:95
+},
+TS2000:{
+ name:"ZKTeco TS2000",
+ desc:"Трёхштанговый турникет в корпусе из нержавеющей стали.",
+ type:"tripod",width:360,height:105
+},
+TS2200:{
+ name:"ZKTeco TS2200",
+ desc:"Трипод с более массивным корпусом и поворотным механизмом.",
+ type:"tripod",width:390,height:115
+},
+SBTL5000:{
+ name:"ZKTeco SBTL5000",
+ desc:"Турникет со стеклянными распашными створками.",
+ type:"swing",width:410,height:115
+},
+FBL6000:{
+ name:"ZKTeco FBL6000",
+ desc:"Турникет с выдвижными створками.",
+ type:"flap",width:390,height:110
+}
+};
 
-const $ = id => document.getElementById(id);
+let model="TS1000";
+let mode="normal";
+let panicActive=false;
+let locked=false;
+let busy=false;
+let total=0,left=0,right=0;
+let opened=false;
 
-function log(text){
- const row = document.createElement("div");
- const time = new Date().toLocaleTimeString("ru-RU");
- const stamp = document.createElement("time");
- stamp.textContent = time;
- row.appendChild(stamp);
- row.appendChild(document.createTextNode(text));
- $("log").prepend(row);
+function log(s){
+ let el=document.createElement("div");
+ el.textContent=new Date().toLocaleTimeString("ru-RU")+" — "+s;
+ document.getElementById("log").prepend(el);
 }
 
-function message(text){ $("message").textContent = text; }
+function draw(){
+ const m=models[model];
+ let svg=document.getElementById("drawing");
+ let bodyWidth=m.width;
+ let bodyHeight=m.height;
+ let x=(650-bodyWidth)/2;
+ let y=145-bodyHeight/2;
+
+ let base=`
+ <defs>
+ <linearGradient id="steel" x1="0" y1="0" x2="0" y2="1">
+ <stop offset="0" stop-color="#f3f6f9"/>
+ <stop offset=".45" stop-color="#9caebe"/>
+ <stop offset="1" stop-color="#52677c"/>
+ </linearGradient>
+ <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+ <stop stop-color="#9ee5ff" stop-opacity=".8"/>
+ <stop offset="1" stop-color="#248ac5" stop-opacity=".2"/>
+ </linearGradient>
+ </defs>
+ <line x1="30" y1="230" x2="620" y2="230" stroke="#647d98" stroke-width="2"/>
+ <ellipse cx="325" cy="233" rx="220" ry="9" fill="#000" opacity=".18"/>
+ `;
+ let body=`
+ <rect x="${x}" y="${y}" width="${bodyWidth}" height="${bodyHeight}" rx="12" fill="url(#steel)" stroke="#edf4fa" stroke-width="2"/>
+ <path d="M${x+15} ${y+10} H${x+bodyWidth-15}" stroke="#fff" opacity=".7" stroke-width="3"/>
+ <rect x="${x+12}" y="${y+bodyHeight-13}" width="${bodyWidth-24}" height="5" rx="2" fill="#34495e"/>
+ <rect x="${x+bodyWidth*.42}" y="${y-9}" width="${bodyWidth*.16}" height="10" rx="4" fill="#53677c"/>
+ `;
+ let detail=`
+ <circle cx="${x+bodyWidth*.5}" cy="${y+bodyHeight*.48}" r="15" fill="#52687d" stroke="#f1f5f9" stroke-width="3"/>
+ <circle cx="${x+bodyWidth*.5}" cy="${y+bodyHeight*.48}" r="6" fill="#dce6ee"/>
+ `;
+ if(m.type==="tripod"){
+  let cx=x+bodyWidth*.5;
+  let cy=y+bodyHeight*.48;
+  let angle=opened?90:0;
+  detail+=`
+  <g transform="translate(${cx} ${cy}) rotate(${angle})">
+   <rect x="0" y="-4" width="105" height="8" rx="4" fill="#e7edf3" stroke="#667d91"/>
+   <rect x="0" y="-4" width="105" height="3" rx="2" fill="#fff"/>
+  </g>
+  <g transform="translate(${cx} ${cy})">
+   <circle r="12" fill="#8194a7" stroke="#fff" stroke-width="2"/>
+  </g>
+  <path d="M${x+bodyWidth*.5} ${y-10} L${x+bodyWidth*.5} ${y+bodyHeight*.48}" stroke="#394d62" stroke-width="5"/>
+  `;
+ }else if(m.type==="swing"){
+  detail+=`
+  <rect x="${x+bodyWidth*.12}" y="${y+bodyHeight*.3}" width="17" height="${bodyHeight*.8}" rx="4" fill="#657d91"/>
+  <rect x="${x+bodyWidth*.83}" y="${y+bodyHeight*.3}" width="17" height="${bodyHeight*.8}" rx="4" fill="#657d91"/>
+  <g transform="translate(${x+bodyWidth*.12} ${y+bodyHeight*.55})">
+   <path d="M0 0 L${opened?145:35} -45 L${opened?145:35} -33 L0 12Z" fill="url(#glass)" stroke="#b7eaff" stroke-width="3"/>
+  </g>
+  <g transform="translate(${x+bodyWidth*.83} ${y+bodyHeight*.55})">
+   <path d="M0 0 L${opened?-145:-35} -45 L${opened?-145:-35} -33 L0 12Z" fill="url(#glass)" stroke="#b7eaff" stroke-width="3"/>
+  </g>
+  `;
+ }else{
+  detail+=`
+  <rect x="${x+bodyWidth*.12}" y="${y+bodyHeight*.32}" width="15" height="${bodyHeight*.8}" rx="4" fill="#657d91"/>
+  <rect x="${x+bodyWidth*.83}" y="${y+bodyHeight*.32}" width="15" height="${bodyHeight*.8}" rx="4" fill="#657d91"/>
+  <rect x="${x+bodyWidth*.12}" y="${y+bodyHeight*.48}" width="${opened?0:85}" height="17" rx="5" fill="url(#glass)" stroke="#a5e5ff" stroke-width="2"/>
+  <rect x="${x+bodyWidth*.83-(opened?0:85)}" y="${y+bodyHeight*.48}" width="${opened?0:85}" height="17" rx="5" fill="url(#glass)" stroke="#a5e5ff" stroke-width="2"/>
+  `;
+ }
+ let led=locked?"#ef4444":panicActive?"#f59e0b":"#22c55e";
+ svg.innerHTML=base+body+detail+
+ `<circle cx="${x+bodyWidth*.5}" cy="${y-16}" r="7" fill="${led}" stroke="#fff" stroke-width="2"/>
+ <text x="325" y="270" fill="#a7bdd4" text-anchor="middle" font-size="12">${model}</text>`;
+ document.getElementById("description").textContent=m.name+" · "+m.desc;
+}
+
+function changeModel(){
+ model=document.getElementById("model").value;
+ opened=false;
+ draw();
+ log("Выбрана модель "+model);
+}
 
 function update(){
- const names = {
-  normal:"Обычный",
-  free:"Свободный проход",
-  panic:"Антипаника"
- };
- $("currentMode").textContent = names[mode];
- $("total").textContent = total;
- $("leftCount").textContent = leftCount;
- $("rightCount").textContent = rightCount;
-
- $("barState").textContent =
-  panicActive ? "Опущена (антипаника)" : "Поднята / рабочее положение";
-
- $("lockState").textContent = locked ? "ЗАБЛОКИРОВАН" : "Нет";
-
- $("directionState").textContent =
-  panicActive ? directionName(panicDirection) :
-  mode === "free" ? "Свободно в обе стороны" :
-  "Оба направления по команде";
-
- $("statusDot").className = "dot" +
-  (locked ? " red" : panicActive ? " orange" : "");
-
- $("statusText").textContent = locked ? "ТРЕВОГА / БЛОКИРОВКА" :
-  panicActive ? "АНТИПАНИКА АКТИВНА" :
-  mode === "free" ? "СВОБОДНЫЙ ПРОХОД" : "СИСТЕМА ГОТОВА";
-
- $("lamp").className = "lamp" +
-  (locked ? " red" : panicActive ? " orange" : "");
-
- $("normalOption").classList.toggle("selected",mode==="normal");
- $("freeOption").classList.toggle("selected",mode==="free");
- $("panicOption").classList.toggle("selected",mode==="panic");
-
- $("arms").classList.toggle("dropped",panicActive);
-
- $("leftBtn").disabled = locked || busy ||
-  (panicActive && panicDirection==="right");
- $("rightBtn").disabled = locked || busy ||
-  (panicActive && panicDirection==="left");
+ document.getElementById("total").textContent=total;
+ document.getElementById("left").textContent=left;
+ document.getElementById("right").textContent=right;
+ document.getElementById("modeText").textContent=
+ mode==="normal"?"Обычный":mode==="free"?"Свободный":"Антипаника";
+ document.getElementById("mechanism").textContent=
+ opened?"Открыт": "В рабочем положении";
+ document.getElementById("panicText").textContent=panicActive?"Включена":"Выключена";
+ document.getElementById("lockText").textContent=locked?"ЗАБЛОКИРОВАН":"Нет";
+ document.getElementById("directionText").textContent=
+ panicActive?document.getElementById("panicDirection").selectedOptions[0].text:
+ mode==="free"?"Обе стороны": "По команде";
+ document.getElementById("status").textContent=
+ locked?"ТРЕВОГА":panicActive?"АНТИПАНИКА АКТИВНА":mode==="free"?"СВОБОДНЫЙ ПРОХОД":"СИСТЕМА ГОТОВА";
+ document.getElementById("dot").className="dot"+(locked?" red":panicActive?" orange":"");
+ draw();
 }
 
-function directionName(d){
- return d==="both" ? "Оба направления" :
- d==="left" ? "Только влево" : "Только вправо";
-}
-
-function setMode(next){
- if(locked){message("Сначала сбросьте блокировку.");return;}
- if(panicActive && next!=="panic"){
-  disablePanic();
- }
- mode=next;
- if(next==="normal"){
-  panicActive=false;
-  message("Обычный режим. Доступен разовый проход.");
- }
- if(next==="free"){
-  panicActive=false;
-  message("Свободный режим. Проход разрешён в обе стороны без ограничений.");
- }
- if(next==="panic"){
-  panic();
-  return;
- }
- log("Установлен режим: "+({
-  normal:"Обычный",free:"Свободный"
- }[next]));
+function setMode(m){
+ if(locked)return;
+ mode=m;
+ panicActive=false;
+ opened=false;
+ log("Режим: "+(m==="free"?"Свободный проход":"Обычный"));
  update();
 }
 
-function pass(direction){
- if(locked || busy) return;
-
- if(panicActive){
-  if(panicDirection!=="both" && panicDirection!==direction){
-   message("Это направление закрыто настройками антипаники.");
-   log("Отказ: запрещённое направление.");
-   return;
-  }
- }else if(mode!=="normal" && mode!=="free"){
+function pass(dir){
+ if(locked||busy)return;
+ let direction=document.getElementById("panicDirection").value;
+ if(panicActive && direction!=="both" && direction!==dir){
+  log("Отказ: направление запрещено.");
   return;
  }
-
  busy=true;
- update();
-
- const directionText=direction==="left"?"влево":"вправо";
- message("Проход разрешён: движение "+directionText+".");
-
- $("arms").classList.add("moving");
- $("arms").style.transform =
-  "rotate("+(direction==="left" ? -120 : 120)+"deg)";
-
- log("Разрешён проход "+directionText+".");
-
+ opened=true;
+ draw();
+ log("Проход разрешён: "+(dir==="left"?"влево":"вправо"));
  setTimeout(()=>{
-  if(direction==="left") leftCount++;
-  else rightCount++;
+  if(dir==="left")left++;else right++;
   total++;
-
-  $("arms").style.transform="rotate(0deg)";
-  $("arms").classList.remove("moving");
+  if(mode==="normal"&&!panicActive)opened=false;
   busy=false;
-
-  if(mode==="normal" && !panicActive){
-   message("Проход завершён. Турникет снова заблокирован до следующей команды.");
-  }else if(panicActive){
-   message("Проход завершён. Антипаника активна, проход остаётся свободным.");
-  }else{
-   message("Проход завершён. Свободный режим продолжается.");
-  }
   update();
- },650);
+  log("Проход завершён.");
+ },900);
 }
 
 function panic(){
- if(locked){
-  message("Нельзя включить антипанику при активной блокировке. Сначала сбросьте тревогу.");
-  return;
- }
- panicActive=true;
- mode="panic";
- panicDirection=$("panicDirection").value;
- message("АНТИПАНИКА АКТИВНА. Штанга опущена. "+directionName(panicDirection)+".");
- log("ВКЛЮЧЕНА АНТИПАНИКА. Штанга опущена. "+directionName(panicDirection));
- update();
-}
-
-function disablePanic(){
- if(locked){
-  message("Сначала сбросьте тревогу.");
-  return;
- }
- panicActive=false;
- if(mode==="panic") mode="normal";
- $("arms").style.transform="rotate(0deg)";
- message("Антипаника отключена. Штанга возвращена в рабочее положение.");
- log("Антипаника отключена. Штанга восстановлена.");
- update();
-}
-
-$("panicDirection").addEventListener("change",()=>{
- panicDirection=$("panicDirection").value;
- if(panicActive){
-  message("Настройка антипаники: "+directionName(panicDirection));
-  log("Изменено направление антипаники: "+directionName(panicDirection));
-  update();
- }
-});
-
-function forceEntry(){
  if(locked)return;
- locked=true;
- alarmActive=true;
+ mode="panic";
+ panicActive=true;
+ opened=true;
+ log("АНТИПАНИКА: механизм освобождён.");
+ update();
+}
+
+function restore(){
+ if(locked)return;
  panicActive=false;
  mode="normal";
- busy=false;
+ opened=false;
+ log("Механизм восстановлен.");
+ update();
+}
 
- $("arms").style.transform="rotate(0deg)";
- $("alarm").classList.add("show");
- message("ТРЕВОГА! Обнаружена попытка принудительного прохода. Команды прохода заблокированы.");
- log("ТРЕВОГА: принудительный проход! Активирована блокировка.");
+function force(){
+ if(locked)return;
+ locked=true;
+ panicActive=false;
+ opened=false;
+ document.getElementById("alarm").classList.add("show");
+ log("ТРЕВОГА: принудительное воздействие. Блокировка.");
  update();
 }
 
 function resetAlarm(){
- if(!locked){
-  message("Активной тревоги нет.");
-  return;
- }
  locked=false;
- alarmActive=false;
- panicActive=false;
+ document.getElementById("alarm").classList.remove("show");
  mode="normal";
- $("alarm").classList.remove("show");
- $("arms").style.transform="rotate(0deg)";
- message("Тревога сброшена оператором. Турникет восстановлен.");
- log("Тревога сброшена. Блокировка снята.");
+ panicActive=false;
+ opened=false;
+ log("Тревога сброшена оператором.");
  update();
 }
 
 function clearLog(){
- $("log").innerHTML="<div>Журнал очищен.</div>";
+ document.getElementById("log").innerHTML="Журнал очищен.";
 }
 
+draw();
 update();
 </script>
 </body>
